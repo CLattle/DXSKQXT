@@ -21,9 +21,11 @@
   <ItemGroup>
     <ClCompile Include="record.cpp" />
     <ClCompile Include="record_test.cpp" />
+    <ClCompile Include="sort_report.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="record.h" />
+    <ClInclude Include="sort_report.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="data.txt" />
