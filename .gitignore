@@ -361,3 +361,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# ===== 数据层自测的本地构建产物（不要提交）=====
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+record_test.exe
