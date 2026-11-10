@@ -1,49 +1,49 @@
 /* ============================================================================
- *  main.c ¡ª¡ª ´óÑ§Éú¿¼ÇÚÏµÍ³ ¡¤ Ö÷¿Ø³ÌĞò£¨±û ¸ºÔğ£©
+ *  main.c â€”â€” å¤§å­¦ç”Ÿè€ƒå‹¤ç³»ç»Ÿ Â· ä¸»æ§ç¨‹åºï¼ˆä¸™ è´Ÿè´£ï¼‰
  *
- *  ¹¦ÄÜ£º
- *    ¡¤ Ö÷²Ëµ¥ 1~9 Ñ­»·£¬Ò»´ÎÔËĞĞ¿É·´¸´²Ù×÷£»
- *    ¡¤ Í³Ò»½ÓÊÕÊäÈë£¬·Ç·¨ÊäÈë¸ø³öÌáÊ¾²¢¿ÉÖØÊÔ£¬²»»á°Ñ³ÌĞò¸ã±À£»
- *    ¡¤ ¼ÇÂ¼ÁĞ±íÖ§³Ö·ÖÒ³ÏÔÊ¾£¨¿ÉÏÔÊ¾²¿·Ö»òÈ«²¿£©¡£
+ *  åŠŸèƒ½ï¼š
+ *    Â· ä¸»èœå• 1~9 å¾ªç¯ï¼Œä¸€æ¬¡è¿è¡Œå¯åå¤æ“ä½œï¼›
+ *    Â· ç»Ÿä¸€æ¥æ”¶è¾“å…¥ï¼Œéæ³•è¾“å…¥ç»™å‡ºæç¤ºå¹¶å¯é‡è¯•ï¼Œä¸ä¼šæŠŠç¨‹åºæå´©ï¼›
+ *    Â· è®°å½•åˆ—è¡¨æ”¯æŒåˆ†é¡µæ˜¾ç¤ºï¼ˆå¯æ˜¾ç¤ºéƒ¨åˆ†æˆ–å…¨éƒ¨ï¼‰ã€‚
  *
- *  ËµÃ÷£º±¾ÎÄ¼şÊÇ C ³ÌĞò£¬¶ø record.cpp / sort_report.cpp ÊÇ C++ ÊµÏÖ£¬
- *        Á½ÕßµÄÍ·ÎÄ¼ş²îÒìÓÃÏÂÃæµÄ extern "C" ´¦Àí£º
- *        ¡¤ ÓÃ C++ ±àÒëÆ÷£¨cl record.cpp sort_report.cpp main.c£©ÕûÌå±àÒëÊ±£¬
- *          Á´½ÓÃû»á×Ô¶¯Í³Ò»£¬²»ĞèÒªÌØÊâ´¦Àí£»
- *        ¡¤ ÈôÓÃ C ·½Ê½µ¥¶À±àÒë main.c£¬Çë±£Ö¤ËüºÍ C++ Ä¿±êÎÄ¼şÁ´½ÓÊ±
- *          Í·ÎÄ¼şÀïµÄÉùÃ÷ÊÇ extern "C"£¨¼ûÏÂ·½ DSH_EXTERN_C ËµÃ÷£©¡£
+ *  è¯´æ˜ï¼šæœ¬æ–‡ä»¶æ˜¯ C ç¨‹åºï¼Œè€Œ record.cpp / sort_report.cpp æ˜¯ C++ å®ç°ï¼Œ
+ *        ä¸¤è€…çš„å¤´æ–‡ä»¶å·®å¼‚ç”¨ä¸‹é¢çš„ extern "C" å¤„ç†ï¼š
+ *        Â· ç”¨ C++ ç¼–è¯‘å™¨ï¼ˆcl record.cpp sort_report.cpp main.cï¼‰æ•´ä½“ç¼–è¯‘æ—¶ï¼Œ
+ *          é“¾æ¥åä¼šè‡ªåŠ¨ç»Ÿä¸€ï¼Œä¸éœ€è¦ç‰¹æ®Šå¤„ç†ï¼›
+ *        Â· è‹¥ç”¨ C æ–¹å¼å•ç‹¬ç¼–è¯‘ main.cï¼Œè¯·ä¿è¯å®ƒå’Œ C++ ç›®æ ‡æ–‡ä»¶é“¾æ¥æ—¶
+ *          å¤´æ–‡ä»¶é‡Œçš„å£°æ˜æ˜¯ extern "C"ï¼ˆè§ä¸‹æ–¹ DSH_EXTERN_C è¯´æ˜ï¼‰ã€‚
  *
- *  ±àÒë£¨VS2022 ¿ª·¢ÕßÃüÁîĞĞ£¬Óë¼×¡¢ÒÒÔ´ÂëÍ¬Ä¿Â¼£©£º
+ *  ç¼–è¯‘ï¼ˆVS2022 å¼€å‘è€…å‘½ä»¤è¡Œï¼Œä¸ç”²ã€ä¹™æºç åŒç›®å½•ï¼‰ï¼š
  *      cl /nologo /EHsc /utf-8 main.c record.cpp sort_report.cpp /Fe:attendance.exe
  *
- *  ÔËĞĞ£ºattendance.exe£¨Êı¾İÎÄ¼şÄ¬ÈÏ attendance_data.txt£¬¿ÉÓÃÃüÁîĞĞ²ÎÊıÖ¸¶¨£©
+ *  è¿è¡Œï¼šattendance.exeï¼ˆæ•°æ®æ–‡ä»¶é»˜è®¤ attendance_data.txtï¼Œå¯ç”¨å‘½ä»¤è¡Œå‚æ•°æŒ‡å®šï¼‰
  * ========================================================================== */
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
  /* --------------------------------------------------------------------------
-  *  Á´½ÓÔ¼¶¨
+  *  é“¾æ¥çº¦å®š
   *
-  *  record.h ºÍ sort_report.h ¶¼ÓÃ C++ Ğ´³É£¨ÓÃµ½ std::string£©£¬ÇÒ record.h
-  *  Ö±½Ó using namespace std£¬ÎŞ·¨ÔÚ C Àï°üº¬¡£Òò´ËÕâÀïÖØĞÂÉùÃ÷±¾³ÌĞòÒªÓÃµ½µÄ
-  *  ½Ó¿Ú£¬²¢°üÔÚ extern "C" ÖĞ£ºC++ ±àÒëÆ÷¿´µ½Ê±°´ C Á´½Ó£¬²»»á²úÉúÃû×ÖĞŞÊÎ²»Æ¥Åä¡£
+  *  record.h å’Œ sort_report.h éƒ½ç”¨ C++ å†™æˆï¼ˆç”¨åˆ° std::stringï¼‰ï¼Œä¸” record.h
+  *  ç›´æ¥ using namespace stdï¼Œæ— æ³•åœ¨ C é‡ŒåŒ…å«ã€‚å› æ­¤è¿™é‡Œé‡æ–°å£°æ˜æœ¬ç¨‹åºè¦ç”¨åˆ°çš„
+  *  æ¥å£ï¼Œå¹¶åŒ…åœ¨ extern "C" ä¸­ï¼šC++ ç¼–è¯‘å™¨çœ‹åˆ°æ—¶æŒ‰ C é“¾æ¥ï¼Œä¸ä¼šäº§ç”Ÿåå­—ä¿®é¥°ä¸åŒ¹é…ã€‚
   *
-  *  ÕâÁ½¸öÉùÃ÷¿éÓë record.h / sort_report.h µÄÇ©Ãû±ØĞë±£³ÖÒ»ÖÂ¡£
+  *  è¿™ä¸¤ä¸ªå£°æ˜å—ä¸ record.h / sort_report.h çš„ç­¾åå¿…é¡»ä¿æŒä¸€è‡´ã€‚
   * -------------------------------------------------------------------------- */
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* ---- record.h£º³£Á¿ ---- */
+    /* ---- record.hï¼šå¸¸é‡ ---- */
 #define MAX_RECORDS 1000
-/* ·µ»ØÂë£¨Óë record.h µÄ enum Ò»ÖÂ£© */
+/* è¿”å›ç ï¼ˆä¸ record.h çš„ enum ä¸€è‡´ï¼‰ */
 #define OK           0
 #define ERR_INVALID  1
 #define ERR_DUP      2
 #define ERR_FULL     3
 #define ERR_NOTFOUND 4
 #define ERR_FILE     5
-/* ×´Ì¬Âë£¨Óë record.h µÄ enum Ò»ÖÂ£© */
+/* çŠ¶æ€ç ï¼ˆä¸ record.h çš„ enum ä¸€è‡´ï¼‰ */
 #define PRESENT        0
 #define ABSENT         1
 #define PERSONAL_LEAVE 2
@@ -51,23 +51,23 @@ extern "C" {
 #define LATE           4
 #define EARLY          5
 #define STATUS_COUNT   6
-/* ---- record.h£ºÊı¾İ±íÓë½Ó¿Ú ----
- * ×¢Òâ£ºRecord º¬ std::string£¬C ÎŞ·¨Ö±½Ó¹¹Ôì£¬ËùÒÔÔöÉ¾¸Ä²Ù×÷Í³Ò»ÓÃ
- * "×Ö¶ÎÖ¸Õë" ĞÎÊ½µÄ°ü×°º¯Êı£¨¼û record_c_api.cpp£©£¬±ÜÃâÔÚ C ÀïÆ´ Record¡£ */
-    int  record_count(void);                    /* µ±Ç°¼ÇÂ¼ÌõÊı */
+/* ---- record.hï¼šæ•°æ®è¡¨ä¸æ¥å£ ----
+ * æ³¨æ„ï¼šRecord å« std::stringï¼ŒC æ— æ³•ç›´æ¥æ„é€ ï¼Œæ‰€ä»¥å¢åˆ æ”¹æ“ä½œç»Ÿä¸€ç”¨
+ * "å­—æ®µæŒ‡é’ˆ" å½¢å¼çš„åŒ…è£…å‡½æ•°ï¼ˆè§ record_c_api.cppï¼‰ï¼Œé¿å…åœ¨ C é‡Œæ‹¼ Recordã€‚ */
+    int  record_count(void);                    /* å½“å‰è®°å½•æ¡æ•° */
     int  record_get(int index, char* id, int idSize,
         char* name, int nameSize, char* cls, int clsSize,
         int* month, int* day, int* status);
-    /* È¡µÚ index ÌõµÄ×Ö¶Î£¬³É¹¦·µ»Ø OK */
+    /* å–ç¬¬ index æ¡çš„å­—æ®µï¼ŒæˆåŠŸè¿”å› OK */
     int  record_add(const char* id, const char* name, const char* cls,
         int month, int day, int status, char* err, int errSize);
     int  record_update(int index, const char* id, const char* name, const char* cls,
         int month, int day, int status, char* err, int errSize);
     int  record_delete(int index);
-    int  record_find(const char* id, int month, int day);   /* ·µ»ØÏÂ±ê»ò -1 */
+    int  record_find(const char* id, int month, int day);   /* è¿”å›ä¸‹æ ‡æˆ– -1 */
     int  record_load(const char* path);
     int  record_save(const char* path);
-    /* ---- sort_report.h£ºÅÅĞòÓë±¨±í ---- */
+    /* ---- sort_report.hï¼šæ’åºä¸æŠ¥è¡¨ ---- */
 #define SORT_BY_ID   0
 #define SORT_BY_NAME 1
 #define SORT_BY_DATE 2
@@ -79,23 +79,23 @@ extern "C" {
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
-/* ×¢Òâ£ºrecord.h Àï sortRecords(Record*, int, SortKey) ĞèÒª C++ µÄ Record Êı×é£¬
- * ÅÅĞò¹¦ÄÜÓÉÏÂÁĞ°ü×°º¯ÊıÔÚ C++ ²àÍê³É£¬ÕâÀïÖ»ÉùÃ÷¡£ */
+/* æ³¨æ„ï¼šrecord.h é‡Œ sortRecords(Record*, int, SortKey) éœ€è¦ C++ çš„ Record æ•°ç»„ï¼Œ
+ * æ’åºåŠŸèƒ½ç”±ä¸‹åˆ—åŒ…è£…å‡½æ•°åœ¨ C++ ä¾§å®Œæˆï¼Œè¿™é‡Œåªå£°æ˜ã€‚ */
 #ifdef __cplusplus
 extern "C" {
 #endif
-    void record_sort(int key);                  /* °´ SORT_BY_* Ô­µØÅÅĞò */
+    void record_sort(int key);                  /* æŒ‰ SORT_BY_* åŸåœ°æ’åº */
 #ifdef __cplusplus
 }
 #endif
 /* ==========================================================================
- *  Ò»¡¢ÊäÈë¸¨Öú£ºÍ³Ò»µÄ¡¢·ÀÓùÊ½µÄÊäÈë½ÓÊÕ
+ *  ä¸€ã€è¾“å…¥è¾…åŠ©ï¼šç»Ÿä¸€çš„ã€é˜²å¾¡å¼çš„è¾“å…¥æ¥æ”¶
  * ========================================================================== */
 #define LINE_MAX_LEN 256
- /* ¶ÁÒ»ĞĞµ½ buf£¬È¥µôĞĞÎ²»»ĞĞ£»³É¹¦·µ»Ø 1¡£
-  * ·µ»Ø 0 ±íÊ¾ EOF »ò¶ÁÈëÊ§°Ü£¨ÀıÈç stdin ÒÑ½áÊø£©¡£
-  * ËµÃ÷£ºÓÃ fgets ¶ø²»ÊÇ scanf("%s")£¬±ÜÃâÊäÈë¹ı³¤Ê±»º³åÇøÒç³ö£¬
-  *       Ò²ÄÜÕıÈ·´¦Àí¡¸ÊäÈëÀïÓĞ¿Õ¸ñ¡¹µÄĞÕÃû/°à¼¶¡£ */
+ /* è¯»ä¸€è¡Œåˆ° bufï¼Œå»æ‰è¡Œå°¾æ¢è¡Œï¼›æˆåŠŸè¿”å› 1ã€‚
+  * è¿”å› 0 è¡¨ç¤º EOF æˆ–è¯»å…¥å¤±è´¥ï¼ˆä¾‹å¦‚ stdin å·²ç»“æŸï¼‰ã€‚
+  * è¯´æ˜ï¼šç”¨ fgets è€Œä¸æ˜¯ scanf("%s")ï¼Œé¿å…è¾“å…¥è¿‡é•¿æ—¶ç¼“å†²åŒºæº¢å‡ºï¼Œ
+  *       ä¹Ÿèƒ½æ­£ç¡®å¤„ç†ã€Œè¾“å…¥é‡Œæœ‰ç©ºæ ¼ã€çš„å§“å/ç­çº§ã€‚ */
 static int read_line(char* buf, int size)
 {
     if (fgets(buf, size, stdin) == NULL) {
@@ -105,16 +105,16 @@ static int read_line(char* buf, int size)
     while (len > 0 && (buf[len - 1] == '\n' || buf[len - 1] == '\r')) {
         buf[--len] = '\0';
     }
-    /* ĞĞÌ«³¤Ê±°ÑÊ£Óà²¿·Ö¶ªÆú£¬·ÀÖ¹Ó°ÏìÏÂÒ»´ÎÊäÈë */
+    /* è¡Œå¤ªé•¿æ—¶æŠŠå‰©ä½™éƒ¨åˆ†ä¸¢å¼ƒï¼Œé˜²æ­¢å½±å“ä¸‹ä¸€æ¬¡è¾“å…¥ */
     if (len == (size_t)(size - 1) && buf[size - 2] != '\n') {
         int ch;
         while ((ch = getchar()) != '\n' && ch != EOF) {
-            /* ¶ªÆú¶àÓà×Ö·û */
+            /* ä¸¢å¼ƒå¤šä½™å­—ç¬¦ */
         }
     }
     return 1;
 }
-/* È¥µôÊ×Î²¿Õ°× */
+/* å»æ‰é¦–å°¾ç©ºç™½ */
 static void trim(char* s)
 {
     char* p = s;
@@ -129,7 +129,7 @@ static void trim(char* s)
         s[--len] = '\0';
     }
 }
-/* ÅĞ¶ÏÕû´®ÊÇ·ñÈ«ÎªÊı×Ö */
+/* åˆ¤æ–­æ•´ä¸²æ˜¯å¦å…¨ä¸ºæ•°å­— */
 static int all_digits(const char* s)
 {
     if (*s == '\0') {
@@ -142,12 +142,12 @@ static int all_digits(const char* s)
     }
     return 1;
 }
-/* ¶ÁÒ»¸öÕûÊıµ½ out¡£ÌáÊ¾Óï prompt »áÏÈÊä³ö¡£
+/* è¯»ä¸€ä¸ªæ•´æ•°åˆ° outã€‚æç¤ºè¯­ prompt ä¼šå…ˆè¾“å‡ºã€‚
  *
- * ·µ»ØÖµ£º
- *   1 ¡ª¡ª ³É¹¦£¬*out ÒÑÌîĞ´£»
- *   0 ¡ª¡ª Õâ´ÎÊäÈë²»ºÏ·¨£¨ÒÑ´òÓ¡ÌáÊ¾£©£¬µ÷ÓÃ·½Ó¦ÖØĞÂÊäÈë£»
- *  -1 ¡ª¡ª ÊäÈëÁ÷½áÊø£¨EOF£©»ò¶ÁÈëÊ§°Ü£¬µ÷ÓÃ·½Ó¦ÍË³ö£¬±ÜÃâËÀÑ­»·¡£ */
+ * è¿”å›å€¼ï¼š
+ *   1 â€”â€” æˆåŠŸï¼Œ*out å·²å¡«å†™ï¼›
+ *   0 â€”â€” è¿™æ¬¡è¾“å…¥ä¸åˆæ³•ï¼ˆå·²æ‰“å°æç¤ºï¼‰ï¼Œè°ƒç”¨æ–¹åº”é‡æ–°è¾“å…¥ï¼›
+ *  -1 â€”â€” è¾“å…¥æµç»“æŸï¼ˆEOFï¼‰æˆ–è¯»å…¥å¤±è´¥ï¼Œè°ƒç”¨æ–¹åº”é€€å‡ºï¼Œé¿å…æ­»å¾ªç¯ã€‚ */
 static int read_int(const char* prompt, int lo, int hi, int* out)
 {
     char buf[LINE_MAX_LEN];
@@ -158,20 +158,20 @@ static int read_int(const char* prompt, int lo, int hi, int* out)
     }
     trim(buf);
     if (!all_digits(buf)) {
-        printf("  [!] ÊäÈëÎŞĞ§£ºÇëÊäÈë %d~%d Ö®¼äµÄÕûÊı¡£\n", lo, hi);
+        printf("  [!] è¾“å…¥æ— æ•ˆï¼šè¯·è¾“å…¥ %d~%d ä¹‹é—´çš„æ•´æ•°ã€‚\n", lo, hi);
         return 0;
     }
     long v = strtol(buf, NULL, 10);
     if (v < lo || v > hi) {
-        printf("  [!] ÊäÈëÎŞĞ§£ºÇëÊäÈë %d~%d Ö®¼äµÄÕûÊı¡£\n", lo, hi);
+        printf("  [!] è¾“å…¥æ— æ•ˆï¼šè¯·è¾“å…¥ %d~%d ä¹‹é—´çš„æ•´æ•°ã€‚\n", lo, hi);
         return 0;
     }
     *out = (int)v;
     return 1;
 }
-/* ·´¸´ÌáÊ¾£¬Ö±µ½¶Áµ½ [lo, hi] ÄÚµÄÕûÊıÎªÖ¹¡£
- * ³É¹¦·µ»Ø 1£»ÊäÈëÁ÷½áÊø·µ»Ø 0£¨´ËÊ±µ÷ÓÃ·½Ó¦·ÅÆúµ±Ç°²Ù×÷»òÍË³ö³ÌĞò£©¡£
- * Ö÷²Ëµ¥ºÍ¸÷×Ó²Ëµ¥¶¼ÓÃËüÈ¡Ñ¡Ïî£¬ÕâÑùÊä´íÒ»¸ö×Ö·û²»»áµ¼ÖÂºóĞøÑ¡ÏîÈ«²¿´íÎ»¡£ */
+/* åå¤æç¤ºï¼Œç›´åˆ°è¯»åˆ° [lo, hi] å†…çš„æ•´æ•°ä¸ºæ­¢ã€‚
+ * æˆåŠŸè¿”å› 1ï¼›è¾“å…¥æµç»“æŸè¿”å› 0ï¼ˆæ­¤æ—¶è°ƒç”¨æ–¹åº”æ”¾å¼ƒå½“å‰æ“ä½œæˆ–é€€å‡ºç¨‹åºï¼‰ã€‚
+ * ä¸»èœå•å’Œå„å­èœå•éƒ½ç”¨å®ƒå–é€‰é¡¹ï¼Œè¿™æ ·è¾“é”™ä¸€ä¸ªå­—ç¬¦ä¸ä¼šå¯¼è‡´åç»­é€‰é¡¹å…¨éƒ¨é”™ä½ã€‚ */
 static int read_choice(const char* prompt, int lo, int hi, int* out)
 {
     for (;;) {
@@ -182,10 +182,10 @@ static int read_choice(const char* prompt, int lo, int hi, int* out)
         if (rc == -1) {
             return 0;
         }
-        /* rc == 0£ºÒÑ¾­´òÓ¡¹ıÌáÊ¾£¬¼ÌĞøÑ¯ÎÊ */
+        /* rc == 0ï¼šå·²ç»æ‰“å°è¿‡æç¤ºï¼Œç»§ç»­è¯¢é—® */
     }
 }
-/* ¶ÁÒ»¸ö·Ç¿Õ×Ö·û´®£¬ÔÊĞíº¬¿Õ¸ñ */
+/* è¯»ä¸€ä¸ªéç©ºå­—ç¬¦ä¸²ï¼Œå…è®¸å«ç©ºæ ¼ */
 static int read_text(const char* prompt, char* out, int size)
 {
     printf("%s", prompt);
@@ -196,7 +196,7 @@ static int read_text(const char* prompt, char* out, int size)
     trim(out);
     return 1;
 }
-/* Ñ¯ÎÊ¡¸ÊÇ·ñ¼ÌĞø¡¹£¬·µ»Ø 1 ±íÊ¾ÊÇ¡£Ö»½ÓÊÜ y/n£¨´óĞ¡Ğ´¾ù¿É£©£¬ÆäËüÊäÈëÖØĞÂÑ¯ÎÊ¡£ */
+/* è¯¢é—®ã€Œæ˜¯å¦ç»§ç»­ã€ï¼Œè¿”å› 1 è¡¨ç¤ºæ˜¯ã€‚åªæ¥å— y/nï¼ˆå¤§å°å†™å‡å¯ï¼‰ï¼Œå…¶å®ƒè¾“å…¥é‡æ–°è¯¢é—®ã€‚ */
 static int ask_yes_no(const char* prompt)
 {
     char buf[LINE_MAX_LEN];
@@ -213,29 +213,29 @@ static int ask_yes_no(const char* prompt)
         if (strcmp(buf, "n") == 0 || strcmp(buf, "N") == 0) {
             return 0;
         }
-        printf("  [!] ÇëÊäÈë y »ò n¡£\n");
+        printf("  [!] è¯·è¾“å…¥ y æˆ– nã€‚\n");
     }
 }
 /* ==========================================================================
- *  ¶ş¡¢·ÖÒ³ÏÔÊ¾
+ *  äºŒã€åˆ†é¡µæ˜¾ç¤º
  * ========================================================================== */
 #define PAGE_SIZE 12
- /* °´Ò³ÏÔÊ¾¼ÇÂ¼¡£start/stop ÎªÏÔÊ¾µÄÆğÖ¹ÏÂ±ê£»Ã¿Ò³Ò³Î²µÈ´ıÓÃ»§°´¼ü£º
-  *   »Ø³µ ¡ú ÏÂÒ»Ò³£»q ¡ú ÌáÇ°½áÊø£»ÆäËü ¡ú Í¬ÑùÊÓÎªÏÂÒ»Ò³¡£ */
+ /* æŒ‰é¡µæ˜¾ç¤ºè®°å½•ã€‚start/stop ä¸ºæ˜¾ç¤ºçš„èµ·æ­¢ä¸‹æ ‡ï¼›æ¯é¡µé¡µå°¾ç­‰å¾…ç”¨æˆ·æŒ‰é”®ï¼š
+  *   å›è½¦ â†’ ä¸‹ä¸€é¡µï¼›q â†’ æå‰ç»“æŸï¼›å…¶å®ƒ â†’ åŒæ ·è§†ä¸ºä¸‹ä¸€é¡µã€‚ */
 static void show_page_range(int start, int stop)
 {
-    const char* symbols[STATUS_COUNT] = { "¡Ì", "X", "¡÷", "¡ğ", "+", "¨C" };
-    const char* names[STATUS_COUNT] = { "³öÇÚ", "¿õ¿Î", "ÊÂ¼Ù", "²¡¼Ù", "³Ùµ½", "ÔçÍË" };
+    const char* symbols[STATUS_COUNT] = { "âˆš", "X", "â–³", "â—‹", "+", "â€“" };
+    const char* names[STATUS_COUNT] = { "å‡ºå‹¤", "æ—·è¯¾", "äº‹å‡", "ç—…å‡", "è¿Ÿåˆ°", "æ—©é€€" };
     if (start < 0) start = 0;
     if (stop > record_count()) stop = record_count();
     if (start >= stop) {
-        printf("  Ã»ÓĞ¿ÉÏÔÊ¾µÄ¼ÇÂ¼¡£\n");
+        printf("  æ²¡æœ‰å¯æ˜¾ç¤ºçš„è®°å½•ã€‚\n");
         return;
     }
     int total = stop - start;
     int pages = (total + PAGE_SIZE - 1) / PAGE_SIZE;
     int index = start;
-    printf("\n  ĞòºÅ  Ñ§ºÅ          ĞÕÃû        °à¼¶        ÈÕÆÚ    ×´Ì¬\n");
+    printf("\n  åºå·  å­¦å·          å§“å        ç­çº§        æ—¥æœŸ    çŠ¶æ€\n");
     printf("  ------------------------------------------------------------------\n");
     int shown = 0;
     int page = 1;
@@ -247,74 +247,74 @@ static void show_page_range(int start, int stop)
             continue;
         }
         const char* sym = (status >= 0 && status < STATUS_COUNT) ? symbols[status] : "?";
-        const char* nm = (status >= 0 && status < STATUS_COUNT) ? names[status] : "Î´Öª";
+        const char* nm = (status >= 0 && status < STATUS_COUNT) ? names[status] : "æœªçŸ¥";
         printf("  %4d  %-12s  %-10s  %-10s  %02d-%02d   %s %s\n",
             shown + 1, id, name, cls, month, day, nm, sym);
         ++shown;
         if (shown % PAGE_SIZE == 0 && index + 1 < stop) {
             printf("  ------------------------------------------------------------------\n");
-            printf("  µÚ %d/%d Ò³ÒÑÏÔÊ¾£¬»Ø³µ¼ÌĞø£¬ÊäÈë q ÍË³ö£º", page, pages);
+            printf("  ç¬¬ %d/%d é¡µå·²æ˜¾ç¤ºï¼Œå›è½¦ç»§ç»­ï¼Œè¾“å…¥ q é€€å‡ºï¼š", page, pages);
             fflush(stdout);
             char buf[LINE_MAX_LEN];
             read_line(buf, sizeof(buf));
             trim(buf);
             if (strcmp(buf, "q") == 0 || strcmp(buf, "Q") == 0) {
-                printf("  ÒÑÌáÇ°½áÊøÏÔÊ¾¡£\n");
+                printf("  å·²æå‰ç»“æŸæ˜¾ç¤ºã€‚\n");
                 return;
             }
             ++page;
-            printf("\n  ĞòºÅ  Ñ§ºÅ          ĞÕÃû        °à¼¶        ÈÕÆÚ    ×´Ì¬\n");
+            printf("\n  åºå·  å­¦å·          å§“å        ç­çº§        æ—¥æœŸ    çŠ¶æ€\n");
             printf("  ------------------------------------------------------------------\n");
         }
     }
     printf("  ------------------------------------------------------------------\n");
-    printf("  ¹²ÏÔÊ¾ %d Ìõ¼ÇÂ¼£¨µÚ %d Ìõ~µÚ %d Ìõ£¬Ã¿Ò³ %d Ìõ£©¡£\n",
+    printf("  å…±æ˜¾ç¤º %d æ¡è®°å½•ï¼ˆç¬¬ %d æ¡~ç¬¬ %d æ¡ï¼Œæ¯é¡µ %d æ¡ï¼‰ã€‚\n",
         shown, start + 1, start + shown, PAGE_SIZE);
 }
-/* ÏÔÊ¾È«²¿¼ÇÂ¼£¨·ÖÒ³£© */
+/* æ˜¾ç¤ºå…¨éƒ¨è®°å½•ï¼ˆåˆ†é¡µï¼‰ */
 static void show_all(void)
 {
     show_page_range(0, record_count());
     if (record_count() == 0) {
-        printf("  ÌáÊ¾£ºµ±Ç°Ã»ÓĞ¼ÇÂ¼£¬¿ÉÏÈÊ¹ÓÃ¡¾1 ĞÂÔö¼ÇÂ¼¡¿»ò¡¾8 ¶ÁÈ¡ÎÄ¼ş¡¿¡£\n");
+        printf("  æç¤ºï¼šå½“å‰æ²¡æœ‰è®°å½•ï¼Œå¯å…ˆä½¿ç”¨ã€1 æ–°å¢è®°å½•ã€‘æˆ–ã€8 è¯»å–æ–‡ä»¶ã€‘ã€‚\n");
     }
 }
 /* ==========================================================================
- *  Èı¡¢¸÷¹¦ÄÜ×Ó²Ëµ¥
+ *  ä¸‰ã€å„åŠŸèƒ½å­èœå•
  * ========================================================================== */
- /* 1 ĞÂÔö¼ÇÂ¼ */
+ /* 1 æ–°å¢è®°å½• */
 static void menu_add(void)
 {
-    printf("\n=== 1 ĞÂÔö¿¼ÇÚ¼ÇÂ¼ ===\n");
+    printf("\n=== 1 æ–°å¢è€ƒå‹¤è®°å½• ===\n");
     char id[32], name[64], cls[64];
-    if (!read_text("  Ñ§ºÅ£¨6~12 Î»Êı×Ö£©£º", id, sizeof(id))) return;
-    if (!read_text("  ĞÕÃû£¨²»³¬¹ı 20 ×Ö½Ú£©£º", name, sizeof(name))) return;
-    if (!read_text("  °à¼¶£¨²»³¬¹ı 30 ×Ö½Ú£©£º", cls, sizeof(cls))) return;
+    if (!read_text("  å­¦å·ï¼ˆ6~12 ä½æ•°å­—ï¼‰ï¼š", id, sizeof(id))) return;
+    if (!read_text("  å§“åï¼ˆä¸è¶…è¿‡ 20 å­—èŠ‚ï¼‰ï¼š", name, sizeof(name))) return;
+    if (!read_text("  ç­çº§ï¼ˆä¸è¶…è¿‡ 30 å­—èŠ‚ï¼‰ï¼š", cls, sizeof(cls))) return;
     int month = 0, day = 0, status = 0;
-    if (!read_choice("  ÔÂ·İ£¨1~12£©£º", 1, 12, &month)) return;
-    if (!read_choice("  ÈÕÆÚ£¨1~31£¬°´ÔÂ·İ×Ô¶¯Ğ£Ñé£©£º", 1, 31, &day)) return;
-    printf("  ×´Ì¬Âë£º0³öÇÚ 1¿õ¿Î 2ÊÂ¼Ù 3²¡¼Ù 4³Ùµ½ 5ÔçÍË\n");
-    if (!read_choice("  ×´Ì¬Âë£¨0~5£©£º", 0, STATUS_COUNT - 1, &status)) return;
+    if (!read_choice("  æœˆä»½ï¼ˆ1~12ï¼‰ï¼š", 1, 12, &month)) return;
+    if (!read_choice("  æ—¥æœŸï¼ˆ1~31ï¼ŒæŒ‰æœˆä»½è‡ªåŠ¨æ ¡éªŒï¼‰ï¼š", 1, 31, &day)) return;
+    printf("  çŠ¶æ€ç ï¼š0å‡ºå‹¤ 1æ—·è¯¾ 2äº‹å‡ 3ç—…å‡ 4è¿Ÿåˆ° 5æ—©é€€\n");
+    if (!read_choice("  çŠ¶æ€ç ï¼ˆ0~5ï¼‰ï¼š", 0, STATUS_COUNT - 1, &status)) return;
     char err[256] = { 0 };
     int rc = record_add(id, name, cls, month, day, status, err, sizeof(err));
     if (rc == OK) {
-        printf("  ĞÂÔö³É¹¦£¡µ±Ç°¹² %d Ìõ¼ÇÂ¼¡£\n", record_count());
+        printf("  æ–°å¢æˆåŠŸï¼å½“å‰å…± %d æ¡è®°å½•ã€‚\n", record_count());
     }
     else {
-        printf("  ĞÂÔöÊ§°Ü£º%s\n", err[0] ? err : "Î´Öª´íÎó");
+        printf("  æ–°å¢å¤±è´¥ï¼š%s\n", err[0] ? err : "æœªçŸ¥é”™è¯¯");
     }
 }
-/* 2 ²éÕÒ¼ÇÂ¼£¨°´Ñ§ºÅ / ĞÕÃû / ÈÕÆÚ£© */
+/* 2 æŸ¥æ‰¾è®°å½•ï¼ˆæŒ‰å­¦å· / å§“å / æ—¥æœŸï¼‰ */
 static void menu_find(void)
 {
-    printf("\n=== 2 ²éÕÒ¿¼ÇÚ¼ÇÂ¼ ===\n");
-    printf("  1) °´Ñ§ºÅ²éÕÒ\n  2) °´ĞÕÃû²éÕÒ\n  3) °´ÈÕÆÚ²éÕÒ\n  0) ·µ»ØÉÏ¼¶²Ëµ¥\n");
+    printf("\n=== 2 æŸ¥æ‰¾è€ƒå‹¤è®°å½• ===\n");
+    printf("  1) æŒ‰å­¦å·æŸ¥æ‰¾\n  2) æŒ‰å§“åæŸ¥æ‰¾\n  3) æŒ‰æ—¥æœŸæŸ¥æ‰¾\n  0) è¿”å›ä¸Šçº§èœå•\n");
     int choice = 0;
-    if (!read_choice("  ÇëÑ¡Ôñ£¨0~3£©£º", 0, 3, &choice)) return;
+    if (!read_choice("  è¯·é€‰æ‹©ï¼ˆ0~3ï¼‰ï¼š", 0, 3, &choice)) return;
     if (choice == 0) return;
     if (choice == 1) {
         char id[32];
-        if (!read_text("  ÇëÊäÈëÑ§ºÅ£º", id, sizeof(id))) return;
+        if (!read_text("  è¯·è¾“å…¥å­¦å·ï¼š", id, sizeof(id))) return;
         int found = 0;
         int n = record_count();
         for (int i = 0; i < n; ++i) {
@@ -322,17 +322,17 @@ static void menu_find(void)
             int m = 0, d = 0, st = 0;
             record_get(i, rid, sizeof(rid), rname, sizeof(rname), rcls, sizeof(rcls), &m, &d, &st);
             if (strcmp(rid, id) == 0) {
-                if (found == 0) printf("\n  ÕÒµ½ÒÔÏÂ¼ÇÂ¼£º\n");
+                if (found == 0) printf("\n  æ‰¾åˆ°ä»¥ä¸‹è®°å½•ï¼š\n");
                 ++found;
-                printf("  µÚ %d Ìõ£º%s %s %s %02d-%02d ×´Ì¬Âë %d\n", i + 1, rid, rname, rcls, m, d, st);
+                printf("  ç¬¬ %d æ¡ï¼š%s %s %s %02d-%02d çŠ¶æ€ç  %d\n", i + 1, rid, rname, rcls, m, d, st);
             }
         }
-        if (found == 0) printf("  Î´ÕÒµ½Ñ§ºÅÎª %s µÄ¼ÇÂ¼¡£\n", id);
-        else printf("  ¹² %d Ìõ¡£\n", found);
+        if (found == 0) printf("  æœªæ‰¾åˆ°å­¦å·ä¸º %s çš„è®°å½•ã€‚\n", id);
+        else printf("  å…± %d æ¡ã€‚\n", found);
     }
     else if (choice == 2) {
         char name[64];
-        if (!read_text("  ÇëÊäÈëĞÕÃû£º", name, sizeof(name))) return;
+        if (!read_text("  è¯·è¾“å…¥å§“åï¼š", name, sizeof(name))) return;
         int found = 0;
         int n = record_count();
         for (int i = 0; i < n; ++i) {
@@ -340,18 +340,18 @@ static void menu_find(void)
             int m = 0, d = 0, st = 0;
             record_get(i, rid, sizeof(rid), rname, sizeof(rname), rcls, sizeof(rcls), &m, &d, &st);
             if (strcmp(rname, name) == 0) {
-                if (found == 0) printf("\n  ÕÒµ½ÒÔÏÂ¼ÇÂ¼£º\n");
+                if (found == 0) printf("\n  æ‰¾åˆ°ä»¥ä¸‹è®°å½•ï¼š\n");
                 ++found;
-                printf("  µÚ %d Ìõ£º%s %s %s %02d-%02d ×´Ì¬Âë %d\n", i + 1, rid, rname, rcls, m, d, st);
+                printf("  ç¬¬ %d æ¡ï¼š%s %s %s %02d-%02d çŠ¶æ€ç  %d\n", i + 1, rid, rname, rcls, m, d, st);
             }
         }
-        if (found == 0) printf("  Î´ÕÒµ½ĞÕÃûÎª %s µÄ¼ÇÂ¼¡£\n", name);
-        else printf("  ¹² %d Ìõ¡£\n", found);
+        if (found == 0) printf("  æœªæ‰¾åˆ°å§“åä¸º %s çš„è®°å½•ã€‚\n", name);
+        else printf("  å…± %d æ¡ã€‚\n", found);
     }
     else {
         int month = 0, day = 0;
-        if (!read_choice("  ÔÂ·İ£¨1~12£©£º", 1, 12, &month)) return;
-        if (!read_choice("  ÈÕÆÚ£¨1~31£©£º", 1, 31, &day)) return;
+        if (!read_choice("  æœˆä»½ï¼ˆ1~12ï¼‰ï¼š", 1, 12, &month)) return;
+        if (!read_choice("  æ—¥æœŸï¼ˆ1~31ï¼‰ï¼š", 1, 31, &day)) return;
         int found = 0;
         int n = record_count();
         for (int i = 0; i < n; ++i) {
@@ -359,130 +359,130 @@ static void menu_find(void)
             int m = 0, d = 0, st = 0;
             record_get(i, rid, sizeof(rid), rname, sizeof(rname), rcls, sizeof(rcls), &m, &d, &st);
             if (m == month && d == day) {
-                if (found == 0) printf("\n  ÕÒµ½ÒÔÏÂ¼ÇÂ¼£º\n");
+                if (found == 0) printf("\n  æ‰¾åˆ°ä»¥ä¸‹è®°å½•ï¼š\n");
                 ++found;
-                printf("  µÚ %d Ìõ£º%s %s %s %02d-%02d ×´Ì¬Âë %d\n", i + 1, rid, rname, rcls, m, d, st);
+                printf("  ç¬¬ %d æ¡ï¼š%s %s %s %02d-%02d çŠ¶æ€ç  %d\n", i + 1, rid, rname, rcls, m, d, st);
             }
         }
-        if (found == 0) printf("  Î´ÕÒµ½ %02d-%02d µÄ¼ÇÂ¼¡£\n", month, day);
-        else printf("  ¹² %d Ìõ¡£\n", found);
+        if (found == 0) printf("  æœªæ‰¾åˆ° %02d-%02d çš„è®°å½•ã€‚\n", month, day);
+        else printf("  å…± %d æ¡ã€‚\n", found);
     }
 }
-/* 3 ĞŞ¸Ä¼ÇÂ¼£ºÏÈ°´Ñ§ºÅ+ÈÕÆÚ¶¨Î»£¬ÔÙÖğÏîÊäÈëĞÂÖµ */
+/* 3 ä¿®æ”¹è®°å½•ï¼šå…ˆæŒ‰å­¦å·+æ—¥æœŸå®šä½ï¼Œå†é€é¡¹è¾“å…¥æ–°å€¼ */
 static void menu_update(void)
 {
-    printf("\n=== 3 ĞŞ¸Ä¿¼ÇÚ¼ÇÂ¼ ===\n");
+    printf("\n=== 3 ä¿®æ”¹è€ƒå‹¤è®°å½• ===\n");
     if (record_count() == 0) {
-        printf("  µ±Ç°Ã»ÓĞ¼ÇÂ¼¡£\n");
+        printf("  å½“å‰æ²¡æœ‰è®°å½•ã€‚\n");
         return;
     }
     char id[32];
-    if (!read_text("  ÇëÊäÈëÒªĞŞ¸Ä¼ÇÂ¼µÄÑ§ºÅ£º", id, sizeof(id))) return;
+    if (!read_text("  è¯·è¾“å…¥è¦ä¿®æ”¹è®°å½•çš„å­¦å·ï¼š", id, sizeof(id))) return;
     int month = 0, day = 0;
-    if (!read_choice("  Ô­¼ÇÂ¼ÔÂ·İ£¨1~12£©£º", 1, 12, &month)) return;
-    if (!read_choice("  Ô­¼ÇÂ¼ÈÕÆÚ£¨1~31£©£º", 1, 31, &day)) return;
+    if (!read_choice("  åŸè®°å½•æœˆä»½ï¼ˆ1~12ï¼‰ï¼š", 1, 12, &month)) return;
+    if (!read_choice("  åŸè®°å½•æ—¥æœŸï¼ˆ1~31ï¼‰ï¼š", 1, 31, &day)) return;
     int index = record_find(id, month, day);
     if (index < 0) {
-        printf("  Î´ÕÒµ½¸ÃÑ§ºÅÔÚ¸ÃÈÕÆÚµÄ¼ÇÂ¼¡£\n");
+        printf("  æœªæ‰¾åˆ°è¯¥å­¦å·åœ¨è¯¥æ—¥æœŸçš„è®°å½•ã€‚\n");
         return;
     }
     char rid[32], rname[64], rcls[64];
     int rm = 0, rd = 0, rst = 0;
     record_get(index, rid, sizeof(rid), rname, sizeof(rname), rcls, sizeof(rcls), &rm, &rd, &rst);
-    printf("  µ±Ç°ÄÚÈİ£º%s %s %s %02d-%02d ×´Ì¬Âë %d\n", rid, rname, rcls, rm, rd, rst);
-    printf("  Ö±½Ó»Ø³µ±íÊ¾±£ÁôÔ­Öµ¡£\n");
+    printf("  å½“å‰å†…å®¹ï¼š%s %s %s %02d-%02d çŠ¶æ€ç  %d\n", rid, rname, rcls, rm, rd, rst);
+    printf("  ç›´æ¥å›è½¦è¡¨ç¤ºä¿ç•™åŸå€¼ã€‚\n");
     char input[LINE_MAX_LEN];
     char newid[32], newname[64], newcls[64];
     snprintf(newid, sizeof(newid), "%s", rid);
     snprintf(newname, sizeof(newname), "%s", rname);
     snprintf(newcls, sizeof(newcls), "%s", rcls);
-    read_text("  Ñ§ºÅ£¨»Ø³µ±£Áô£©£º", input, sizeof(input));
+    read_text("  å­¦å·ï¼ˆå›è½¦ä¿ç•™ï¼‰ï¼š", input, sizeof(input));
     if (input[0] != '\0') snprintf(newid, sizeof(newid), "%s", input);
-    read_text("  ĞÕÃû£¨»Ø³µ±£Áô£©£º", input, sizeof(input));
+    read_text("  å§“åï¼ˆå›è½¦ä¿ç•™ï¼‰ï¼š", input, sizeof(input));
     if (input[0] != '\0') snprintf(newname, sizeof(newname), "%s", input);
-    read_text("  °à¼¶£¨»Ø³µ±£Áô£©£º", input, sizeof(input));
+    read_text("  ç­çº§ï¼ˆå›è½¦ä¿ç•™ï¼‰ï¼š", input, sizeof(input));
     if (input[0] != '\0') snprintf(newcls, sizeof(newcls), "%s", input);
     int newm = rm, newd = rd, newst = rst;
-    read_text("  ÔÂ·İ£¨»Ø³µ±£Áô£©£º", input, sizeof(input));
+    read_text("  æœˆä»½ï¼ˆå›è½¦ä¿ç•™ï¼‰ï¼š", input, sizeof(input));
     if (input[0] != '\0') {
         if (all_digits(input) && atoi(input) >= 1 && atoi(input) <= 12) newm = atoi(input);
-        else printf("  [!] ÔÂ·İÎŞĞ§£¬±£ÁôÔ­Öµ %d¡£\n", rm);
+        else printf("  [!] æœˆä»½æ— æ•ˆï¼Œä¿ç•™åŸå€¼ %dã€‚\n", rm);
     }
-    read_text("  ÈÕÆÚ£¨»Ø³µ±£Áô£©£º", input, sizeof(input));
+    read_text("  æ—¥æœŸï¼ˆå›è½¦ä¿ç•™ï¼‰ï¼š", input, sizeof(input));
     if (input[0] != '\0') {
         if (all_digits(input) && atoi(input) >= 1 && atoi(input) <= 31) newd = atoi(input);
-        else printf("  [!] ÈÕÆÚÎŞĞ§£¬±£ÁôÔ­Öµ %d¡£\n", rd);
+        else printf("  [!] æ—¥æœŸæ— æ•ˆï¼Œä¿ç•™åŸå€¼ %dã€‚\n", rd);
     }
-    printf("  ×´Ì¬Âë£º0³öÇÚ 1¿õ¿Î 2ÊÂ¼Ù 3²¡¼Ù 4³Ùµ½ 5ÔçÍË\n");
-    read_text("  ×´Ì¬Âë£¨»Ø³µ±£Áô£©£º", input, sizeof(input));
+    printf("  çŠ¶æ€ç ï¼š0å‡ºå‹¤ 1æ—·è¯¾ 2äº‹å‡ 3ç—…å‡ 4è¿Ÿåˆ° 5æ—©é€€\n");
+    read_text("  çŠ¶æ€ç ï¼ˆå›è½¦ä¿ç•™ï¼‰ï¼š", input, sizeof(input));
     if (input[0] != '\0') {
         if (all_digits(input) && atoi(input) >= 0 && atoi(input) < STATUS_COUNT) newst = atoi(input);
-        else printf("  [!] ×´Ì¬ÂëÎŞĞ§£¬±£ÁôÔ­Öµ %d¡£\n", rst);
+        else printf("  [!] çŠ¶æ€ç æ— æ•ˆï¼Œä¿ç•™åŸå€¼ %dã€‚\n", rst);
     }
     char err[256] = { 0 };
     int rc = record_update(index, newid, newname, newcls, newm, newd, newst, err, sizeof(err));
     if (rc == OK) {
-        printf("  ĞŞ¸Ä³É¹¦¡£\n");
+        printf("  ä¿®æ”¹æˆåŠŸã€‚\n");
     }
     else {
-        printf("  ĞŞ¸ÄÊ§°Ü£º%s\n", err[0] ? err : "Î´Öª´íÎó");
+        printf("  ä¿®æ”¹å¤±è´¥ï¼š%s\n", err[0] ? err : "æœªçŸ¥é”™è¯¯");
     }
 }
-/* 4 É¾³ı¼ÇÂ¼ */
+/* 4 åˆ é™¤è®°å½• */
 static void menu_delete(void)
 {
-    printf("\n=== 4 É¾³ı¿¼ÇÚ¼ÇÂ¼ ===\n");
+    printf("\n=== 4 åˆ é™¤è€ƒå‹¤è®°å½• ===\n");
     if (record_count() == 0) {
-        printf("  µ±Ç°Ã»ÓĞ¼ÇÂ¼¡£\n");
+        printf("  å½“å‰æ²¡æœ‰è®°å½•ã€‚\n");
         return;
     }
     char id[32];
-    if (!read_text("  ÇëÊäÈëÒªÉ¾³ı¼ÇÂ¼µÄÑ§ºÅ£º", id, sizeof(id))) return;
+    if (!read_text("  è¯·è¾“å…¥è¦åˆ é™¤è®°å½•çš„å­¦å·ï¼š", id, sizeof(id))) return;
     int month = 0, day = 0;
-    if (!read_choice("  ¼ÇÂ¼ÔÂ·İ£¨1~12£©£º", 1, 12, &month)) return;
-    if (!read_choice("  ¼ÇÂ¼ÈÕÆÚ£¨1~31£©£º", 1, 31, &day)) return;
+    if (!read_choice("  è®°å½•æœˆä»½ï¼ˆ1~12ï¼‰ï¼š", 1, 12, &month)) return;
+    if (!read_choice("  è®°å½•æ—¥æœŸï¼ˆ1~31ï¼‰ï¼š", 1, 31, &day)) return;
     int index = record_find(id, month, day);
     if (index < 0) {
-        printf("  Î´ÕÒµ½¸Ã¼ÇÂ¼¡£\n");
+        printf("  æœªæ‰¾åˆ°è¯¥è®°å½•ã€‚\n");
         return;
     }
-    if (!ask_yes_no("  È·ÈÏÉ¾³ı¸Ã¼ÇÂ¼£¿(y/n)£º")) {
-        printf("  ÒÑÈ¡Ïû¡£\n");
+    if (!ask_yes_no("  ç¡®è®¤åˆ é™¤è¯¥è®°å½•ï¼Ÿ(y/n)ï¼š")) {
+        printf("  å·²å–æ¶ˆã€‚\n");
         return;
     }
     int rc = record_delete(index);
-    if (rc == OK) printf("  É¾³ı³É¹¦£¬µ±Ç°¹² %d Ìõ¼ÇÂ¼¡£\n", record_count());
-    else printf("  É¾³ıÊ§°Ü¡£\n");
+    if (rc == OK) printf("  åˆ é™¤æˆåŠŸï¼Œå½“å‰å…± %d æ¡è®°å½•ã€‚\n", record_count());
+    else printf("  åˆ é™¤å¤±è´¥ã€‚\n");
 }
-/* 5 ÏÔÊ¾ÁĞ±í£¨°´ÅÅĞò·½Ê½£© */
+/* 5 æ˜¾ç¤ºåˆ—è¡¨ï¼ˆæŒ‰æ’åºæ–¹å¼ï¼‰ */
 static void menu_list(void)
 {
-    printf("\n=== 5 ÏÔÊ¾¿¼ÇÚ¼ÇÂ¼ÁĞ±í ===\n");
-    printf("  ÅÅĞò·½Ê½£º\n");
-    printf("  1) °´Ñ§ºÅ£¨Ñ§ºÅ¡úÈÕÆÚ¡úĞÕÃû£©\n");
-    printf("  2) °´ĞÕÃû£¨ĞÕÃû¡úÑ§ºÅ¡úÈÕÆÚ£©\n");
-    printf("  3) °´ÈÕÆÚ£¨ÈÕÆÚ¡úÑ§ºÅ£©\n");
-    printf("  0) ²»ÅÅĞò£¬°´Â¼ÈëË³Ğò\n");
+    printf("\n=== 5 æ˜¾ç¤ºè€ƒå‹¤è®°å½•åˆ—è¡¨ ===\n");
+    printf("  æ’åºæ–¹å¼ï¼š\n");
+    printf("  1) æŒ‰å­¦å·ï¼ˆå­¦å·â†’æ—¥æœŸâ†’å§“åï¼‰\n");
+    printf("  2) æŒ‰å§“åï¼ˆå§“åâ†’å­¦å·â†’æ—¥æœŸï¼‰\n");
+    printf("  3) æŒ‰æ—¥æœŸï¼ˆæ—¥æœŸâ†’å­¦å·ï¼‰\n");
+    printf("  0) ä¸æ’åºï¼ŒæŒ‰å½•å…¥é¡ºåº\n");
     int choice = 0;
-    if (!read_choice("  ÇëÑ¡Ôñ£¨0~3£©£º", 0, 3, &choice)) return;
+    if (!read_choice("  è¯·é€‰æ‹©ï¼ˆ0~3ï¼‰ï¼š", 0, 3, &choice)) return;
     if (choice == 1) record_sort(SORT_BY_ID);
     else if (choice == 2) record_sort(SORT_BY_NAME);
     else if (choice == 3) record_sort(SORT_BY_DATE);
     show_all();
 }
-/* 6 Í³¼Æ±¨±í */
+/* 6 ç»Ÿè®¡æŠ¥è¡¨ */
 static void menu_stat(void)
 {
-    printf("\n=== 6 Êı¾İÍ³¼Æ£¨±¨±í£© ===\n");
-    printf("  1) ¿¼ÇÚÃ÷Ï¸±í\n");
-    printf("  2) ¿¼ÇÚÈÕ±¨±í\n");
-    printf("  3) ¿¼ÇÚ»ã×Ü±í\n");
-    printf("  4) ¿¼ÇÚÒì³£±í\n");
-    printf("  5) Çë¼Ù»ã×Ü±í\n");
-    printf("  6) È«²¿ÏÔÊ¾\n");
-    printf("  0) ·µ»ØÉÏ¼¶²Ëµ¥\n");
+    printf("\n=== 6 æ•°æ®ç»Ÿè®¡ï¼ˆæŠ¥è¡¨ï¼‰ ===\n");
+    printf("  1) è€ƒå‹¤æ˜ç»†è¡¨\n");
+    printf("  2) è€ƒå‹¤æ—¥æŠ¥è¡¨\n");
+    printf("  3) è€ƒå‹¤æ±‡æ€»è¡¨\n");
+    printf("  4) è€ƒå‹¤å¼‚å¸¸è¡¨\n");
+    printf("  5) è¯·å‡æ±‡æ€»è¡¨\n");
+    printf("  6) å…¨éƒ¨æ˜¾ç¤º\n");
+    printf("  0) è¿”å›ä¸Šçº§èœå•\n");
     int choice = 0;
-    if (!read_choice("  ÇëÑ¡Ôñ£¨0~6£©£º", 0, 6, &choice)) return;
+    if (!read_choice("  è¯·é€‰æ‹©ï¼ˆ0~6ï¼‰ï¼š", 0, 6, &choice)) return;
     switch (choice) {
     case 1: report_detail(); break;
     case 2: report_daily(); break;
@@ -499,74 +499,74 @@ static void menu_stat(void)
     default: break;
     }
 }
-/* 7 ±£´æÊı¾İ */
+/* 7 ä¿å­˜æ•°æ® */
 static void menu_save(const char* path)
 {
-    printf("\n=== 7 ±£´æÊı¾İµ½ÎÄ¼ş ===\n");
+    printf("\n=== 7 ä¿å­˜æ•°æ®åˆ°æ–‡ä»¶ ===\n");
     int rc = record_save(path);
-    if (rc == OK) printf("  ÒÑ±£´æ %d Ìõ¼ÇÂ¼µ½ %s\n", record_count(), path);
-    else printf("  ±£´æÊ§°Ü£ºÎŞ·¨Ğ´Èë %s\n", path);
+    if (rc == OK) printf("  å·²ä¿å­˜ %d æ¡è®°å½•åˆ° %s\n", record_count(), path);
+    else printf("  ä¿å­˜å¤±è´¥ï¼šæ— æ³•å†™å…¥ %s\n", path);
 }
-/* 8 ´ÓÎÄ¼ş¶ÁÈë */
+/* 8 ä»æ–‡ä»¶è¯»å…¥ */
 static void menu_load(const char* path)
 {
-    printf("\n=== 8 ´ÓÎÄ¼ş¶ÁÈëÊı¾İ ===\n");
+    printf("\n=== 8 ä»æ–‡ä»¶è¯»å…¥æ•°æ® ===\n");
     int rc = record_load(path);
-    if (rc == OK) printf("  ¶ÁÈ¡³É¹¦£¬µ±Ç°¹² %d Ìõ¼ÇÂ¼¡£\n", record_count());
-    else if (rc == ERR_FILE) printf("  ¶ÁÈ¡Ê§°Ü£ºÕÒ²»µ½ÎÄ¼ş %s\n", path);
-    else printf("  ¶ÁÈ¡Ê§°Ü£¨´íÎóÂë %d£©¡£\n", rc);
+    if (rc == OK) printf("  è¯»å–æˆåŠŸï¼Œå½“å‰å…± %d æ¡è®°å½•ã€‚\n", record_count());
+    else if (rc == ERR_FILE) printf("  è¯»å–å¤±è´¥ï¼šæ‰¾ä¸åˆ°æ–‡ä»¶ %s\n", path);
+    else printf("  è¯»å–å¤±è´¥ï¼ˆé”™è¯¯ç  %dï¼‰ã€‚\n", rc);
 }
-/* 9 ÍË³ö */
+/* 9 é€€å‡º */
 static void save_before_exit(const char* path)
 {
-    printf("\n=== 9 ÍË³öÏµÍ³ ===\n");
+    printf("\n=== 9 é€€å‡ºç³»ç»Ÿ ===\n");
     if (record_count() > 0) {
-        if (ask_yes_no("  ÍË³öÇ°ÒªÏÈ±£´æµ½Êı¾İÎÄ¼şÂğ£¿(y/n)£º")) {
+        if (ask_yes_no("  é€€å‡ºå‰è¦å…ˆä¿å­˜åˆ°æ•°æ®æ–‡ä»¶å—ï¼Ÿ(y/n)ï¼š")) {
             int rc = record_save(path);
-            if (rc == OK) printf("  ÒÑ±£´æ %d Ìõ¼ÇÂ¼µ½ %s\n", record_count(), path);
-            else printf("  ±£´æÊ§°Ü£ºÎŞ·¨Ğ´Èë %s\n", path);
+            if (rc == OK) printf("  å·²ä¿å­˜ %d æ¡è®°å½•åˆ° %s\n", record_count(), path);
+            else printf("  ä¿å­˜å¤±è´¥ï¼šæ— æ³•å†™å…¥ %s\n", path);
         }
     }
-    printf("  ¸ĞĞ»Ê¹ÓÃ´óÑ§Éú¿¼ÇÚÏµÍ³£¬ÔÙ¼û£¡\n");
+    printf("  æ„Ÿè°¢ä½¿ç”¨å¤§å­¦ç”Ÿè€ƒå‹¤ç³»ç»Ÿï¼Œå†è§ï¼\n");
 }
 /* ==========================================================================
- *  ËÄ¡¢Ö÷²Ëµ¥
+ *  å››ã€ä¸»èœå•
  * ========================================================================== */
 static void print_menu(void)
 {
     printf("\n");
     printf("  ==================================================================\n");
-    printf("                    ´ó Ñ§ Éú ¿¼ ÇÚ Ïµ Í³\n");
+    printf("                    å¤§ å­¦ ç”Ÿ è€ƒ å‹¤ ç³» ç»Ÿ\n");
     printf("  ==================================================================\n");
-    printf("     1. ĞÂÔö¿¼ÇÚ¼ÇÂ¼          2. ²éÕÒ¿¼ÇÚ¼ÇÂ¼\n");
-    printf("     3. ĞŞ¸Ä¿¼ÇÚ¼ÇÂ¼          4. É¾³ı¿¼ÇÚ¼ÇÂ¼\n");
-    printf("     5. ÏÔÊ¾¼ÇÂ¼ÁĞ±í          6. Í³¼Æ±¨±í\n");
-    printf("     7. ±£´æÊı¾İµ½ÎÄ¼ş        8. ´ÓÎÄ¼ş¶ÁÈëÊı¾İ\n");
-    printf("     9. ÍË³öÏµÍ³\n");
+    printf("     1. æ–°å¢è€ƒå‹¤è®°å½•          2. æŸ¥æ‰¾è€ƒå‹¤è®°å½•\n");
+    printf("     3. ä¿®æ”¹è€ƒå‹¤è®°å½•          4. åˆ é™¤è€ƒå‹¤è®°å½•\n");
+    printf("     5. æ˜¾ç¤ºè®°å½•åˆ—è¡¨          6. ç»Ÿè®¡æŠ¥è¡¨\n");
+    printf("     7. ä¿å­˜æ•°æ®åˆ°æ–‡ä»¶        8. ä»æ–‡ä»¶è¯»å…¥æ•°æ®\n");
+    printf("     9. é€€å‡ºç³»ç»Ÿ\n");
     printf("  ==================================================================\n");
-    printf("  µ±Ç°¼ÇÂ¼Êı£º%d Ìõ\n", record_count());
+    printf("  å½“å‰è®°å½•æ•°ï¼š%d æ¡\n", record_count());
 }
 int main(int argc, char** argv)
 {
-    /* Êı¾İÎÄ¼şÂ·¾¶£ºÃüÁîĞĞ²ÎÊıÓÅÏÈ£¬·ñÔòÓÃÄ¬ÈÏÎÄ¼şÃû */
+    /* æ•°æ®æ–‡ä»¶è·¯å¾„ï¼šå‘½ä»¤è¡Œå‚æ•°ä¼˜å…ˆï¼Œå¦åˆ™ç”¨é»˜è®¤æ–‡ä»¶å */
     const char* path = (argc >= 2) ? argv[1] : "attendance_data.txt";
 #ifdef _WIN32
-    /* ¿ØÖÆÌ¨ÖĞÎÄÂÒÂë´¦Àí£º°Ñ´úÂëÒ³ÇĞµ½ UTF-8£¨ÓëÔ´Âë±àÂëÒ»ÖÂ£© */
+    /* æ§åˆ¶å°ä¸­æ–‡ä¹±ç å¤„ç†ï¼šæŠŠä»£ç é¡µåˆ‡åˆ° UTF-8ï¼ˆä¸æºç ç¼–ç ä¸€è‡´ï¼‰ */
     system("chcp 65001 > nul");
 #endif
-    /* Æô¶¯Ê±³¢ÊÔ×Ô¶¯¶ÁÈëÊı¾İÎÄ¼ş£»ÎÄ¼ş²»´æÔÚÊôÓÚÕı³£Çé¿ö£¬²»±¨´í */
+    /* å¯åŠ¨æ—¶å°è¯•è‡ªåŠ¨è¯»å…¥æ•°æ®æ–‡ä»¶ï¼›æ–‡ä»¶ä¸å­˜åœ¨å±äºæ­£å¸¸æƒ…å†µï¼Œä¸æŠ¥é”™ */
     if (record_load(path) != OK) {
-        printf("  ÌáÊ¾£ºÎ´ÕÒµ½Êı¾İÎÄ¼ş %s£¬¿É×÷ÎªĞÂÏµÍ³¿ªÊ¼Ê¹ÓÃ¡£\n", path);
+        printf("  æç¤ºï¼šæœªæ‰¾åˆ°æ•°æ®æ–‡ä»¶ %sï¼Œå¯ä½œä¸ºæ–°ç³»ç»Ÿå¼€å§‹ä½¿ç”¨ã€‚\n", path);
     }
     else {
-        printf("  ÒÑ´Ó %s ¶ÁÈë %d Ìõ¼ÇÂ¼¡£\n", path, record_count());
+        printf("  å·²ä» %s è¯»å…¥ %d æ¡è®°å½•ã€‚\n", path, record_count());
     }
     for (;;) {
         print_menu();
         int choice = 0;
-        if (!read_choice("  ÇëÑ¡Ôñ¹¦ÄÜ£¨1~9£©£º", 1, 9, &choice)) {
-            /* read_choice Ö»ÔÚÊäÈëÁ÷½áÊøÊ±·µ»Ø 0£»·Ç·¨ÊäÈë»áÔÚÕâÀï±»ÖØĞÂÑ¯ÎÊ */
-            printf("\n  ÊäÈëÒÑ½áÊø£¬³ÌĞòÍË³ö¡£\n");
+        if (!read_choice("  è¯·é€‰æ‹©åŠŸèƒ½ï¼ˆ1~9ï¼‰ï¼š", 1, 9, &choice)) {
+            /* read_choice åªåœ¨è¾“å…¥æµç»“æŸæ—¶è¿”å› 0ï¼›éæ³•è¾“å…¥ä¼šåœ¨è¿™é‡Œè¢«é‡æ–°è¯¢é—® */
+            printf("\n  è¾“å…¥å·²ç»“æŸï¼Œç¨‹åºé€€å‡ºã€‚\n");
             return 0;
         }
         switch (choice) {
@@ -582,7 +582,7 @@ int main(int argc, char** argv)
             save_before_exit(path);
             return 0;
         default:
-            printf("  [!] ÎŞĞ§Ñ¡Ïî£¬ÇëÊäÈë 1~9¡£\n");
+            printf("  [!] æ— æ•ˆé€‰é¡¹ï¼Œè¯·è¾“å…¥ 1~9ã€‚\n");
             break;
         }
     }
