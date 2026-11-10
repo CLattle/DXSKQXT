@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="1-9整合.cpp" />
     <ClCompile Include="record.cpp" />
     <ClCompile Include="record_test.cpp" />
     <ClCompile Include="sort_report.cpp" />

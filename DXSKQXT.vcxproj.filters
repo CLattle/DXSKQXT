@@ -21,9 +21,18 @@
     <ClCompile Include="record_test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="sort_report.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="1-9整合.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="record.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="sort_report.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
