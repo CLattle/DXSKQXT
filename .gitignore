@@ -369,3 +369,6 @@ FodyWeavers.xsd
 *.exp
 *.lib
 record_test.exe
+
+# 程序运行时生成的数据文件（不要提交）
+attendance_data.txt
