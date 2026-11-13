@@ -188,6 +188,7 @@ int findRecord(const string &id, int month, int day)
 }
 
 /* 按学号查找，一名学生可能有多天记录，所以返回的是下标数组。 */
+//idx[]为输出数组，max为该输出数组的最大容量
 int findById(const string &id, int idx[], int max)
 {
     int n = 0;
