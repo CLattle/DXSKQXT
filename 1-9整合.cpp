@@ -865,7 +865,7 @@ int main(int argc, char** argv)
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
-    string path = "attendance_data.txt";
+    string path = "data.txt";
     if (argc >= 2) {
         path = argv[1];
     }
