@@ -1,861 +1,867 @@
 /* ============================================================================
- *  main.cpp —— 大学生考勤系统 · 主控程序（C++ 版）
+ *  main.cpp —— 大学生考勤系统 · 界面层（丙）
  *
- *  由 main.c 转换而来，保留原来的菜单、分页、输入校验和全部操作流程，
- *  但不再使用 extern "C" / record_c_api.cpp，而是直接调用 record.h 和
- *  sort_report.h 中的 C++ 接口：
+ *  全部写法来自《面向对象程序设计及C++（第3版）》：
+ *    2.2  名字空间的定义及使用      → using namespace std;
+ *    2.3  新增字符串的处理          → string 类型
+ *    2.5  引用的定义与应用          → const string& 作形参
+ *    3.1  类的定义 / 3.2 访问属性    → class AttendanceUI 的 public/private
+ *    3.4  构造函数与析构函数        → 构造函数 + 初始化列表
+ *    3.6  对象的应用                → 对象作参数（Record 传引用）
+ *    4.2  静态成员                  → static const int PAGE_SIZE
+ *    4.4  常成员                    → 常成员函数（不修改对象状态）
+ *    6.2  运算符重载                → operator<< 输出一条 Record
+ *    8.2  键盘输入与屏幕输出        → cin.getline / cout
  *
- *      Record、records、recordCount
- *      addRecord / updateRecord / deleteRecord / findRecord
- *      loadData / saveData
- *      sortRecords / reportDetail / reportDaily / reportSummary
- *      reportAbnormal / reportLeave
- *
- *  主要 C++ 化改动：
- *    · 字符串使用 std::string，查找结果使用 std::vector<int>；
- *    · 输入输出使用 std::cin / std::cout，全程读整行再解析；
- *    · 用匿名命名空间封装界面辅助函数，避免全局符号污染；
- *    · 用 Record 直接构造数据，不再经过 char* 字段包装层；
- *    · 保留防御式输入：非法输入、超长输入、EOF 都不会造成死循环。
- *
- *  编译（VS2022 开发者命令行，与 record.cpp / sort_report.cpp 同目录）：
- *      cl /nologo /EHsc /utf-8 main.cpp record.cpp sort_report.cpp /Fe:attendance.exe
- *
- *  运行：
- *      attendance.exe [数据文件]
- *      数据文件默认是 attendance_data.txt。
+ *  刻意不使用：vector、to_string、范围 for、auto、constexpr、lambda、
+ *  std::sort、strtol、sprintf —— 这些均不在本书范围内。
  * ========================================================================== */
 
 #include "record.h"
 #include "sort_report.h"
 
-#include <cctype>
-#include <cstdio>
-#include <cstdlib>
 #include <iostream>
 #include <string>
-#include <vector>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
+using namespace std;
 
-namespace {
+/* ----------------------------------------------------------------------------
+ *  文件内的小工具（都是普通的自由函数，不属于任何类）
+ * -------------------------------------------------------------------------- */
 
-    constexpr int kPageSize = 12;
-    constexpr const char* kDefaultDataFile = "attendance_data.txt";
+const int LINE_SIZE = 256;          // 一次最多读入的字符数
 
-    /* ==========================================================================
-     *  一、控制台与输入辅助
-     * ========================================================================== */
-
-     /* 把 Windows 控制台的输入、输出代码页切到 UTF-8。
-      * 输出被重定向或不在 Windows 上时，什么也不做。 */
-    void setupConsole()
-    {
-#ifdef _WIN32
-        SetConsoleOutputCP(CP_UTF8);
-        SetConsoleCP(CP_UTF8);
-#endif
-    }
-
-    /* 读取一整行。成功返回 true；遇到 EOF 返回 false。 */
-    bool readLine(std::string& line)
-    {
-        if (!std::getline(std::cin, line)) {
-            return false;
-        }
-        if (!line.empty() && line.back() == '\r') {
-            line.pop_back();
-        }
-        return true;
-    }
-
-    /* 去掉首尾空白字符。 */
-    void trim(std::string& text)
-    {
-        std::size_t begin = 0;
-        while (begin < text.size() &&
-            std::isspace(static_cast<unsigned char>(text[begin])) != 0) {
-            ++begin;
-        }
-
-        std::size_t end = text.size();
-        while (end > begin &&
-            std::isspace(static_cast<unsigned char>(text[end - 1])) != 0) {
-            --end;
-        }
-
-        text = text.substr(begin, end - begin);
-    }
-
-    /* 判断整串是否全为十进制数字。 */
-    bool allDigits(const std::string& text)
-    {
-        if (text.empty()) {
-            return false;
-        }
-        for (char ch : text) {
-            if (std::isdigit(static_cast<unsigned char>(ch)) == 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /* 把 text 解析成 [low, high] 内的整数；失败返回 false。 */
-    bool parseBoundedInt(const std::string& text, int low, int high, int& out)
-    {
-        if (!allDigits(text)) {
-            return false;
-        }
-
-        const long value = std::strtol(text.c_str(), nullptr, 10);
-        if (value < low || value > high) {
-            return false;
-        }
-
-        out = static_cast<int>(value);
-        return true;
-    }
-
-    /* 读一个整数。
-     * 返回 1：成功；0：输入非法（已经提示，可重试）；-1：输入流结束。 */
-    int readInt(const std::string& prompt, int low, int high, int& out)
-    {
-        std::cout << prompt << std::flush;
-
-        std::string line;
-        if (!readLine(line)) {
-            return -1;
-        }
-        trim(line);
-
-        if (!parseBoundedInt(line, low, high, out)) {
-            std::cout << "  [!] 输入无效：请输入 " << low << "~" << high
-                << " 之间的整数。\n";
-            return 0;
-        }
-        return 1;
-    }
-
-    /* 反复询问，直到得到 [low, high] 内的整数。
-     * 返回 false 表示输入流结束，调用方应退出当前操作。 */
-    bool readChoice(const std::string& prompt, int low, int high, int& out)
-    {
-        for (;;) {
-            const int rc = readInt(prompt, low, high, out);
-            if (rc == 1) {
-                return true;
-            }
-            if (rc == -1) {
-                return false;
-            }
-            /* rc == 0：已经提示过，继续询问 */
-        }
-    }
-
-    /* 读取一行文本并去掉首尾空白。成功返回 true。 */
-    bool readText(const std::string& prompt, std::string& out)
-    {
-        std::cout << prompt << std::flush;
-        if (!readLine(out)) {
-            return false;
-        }
-        trim(out);
-        return true;
-    }
-
-    /* 询问 y/n。只接受 y、Y、n、N；EOF 按“否”处理。 */
-    bool askYesNo(const std::string& prompt)
-    {
-        std::string line;
-        for (;;) {
-            std::cout << prompt << std::flush;
-            if (!readLine(line)) {
-                return false;
-            }
-            trim(line);
-
-            if (line == "y" || line == "Y") {
-                return true;
-            }
-            if (line == "n" || line == "N") {
-                return false;
-            }
-            std::cout << "  [!] 请输入 y 或 n。\n";
-        }
-    }
-
-    /* ==========================================================================
-     *  二、UTF-8 显示宽度与分页
-     * ========================================================================== */
-
-     /* 计算 UTF-8 字符串在控制台上的显示宽度：ASCII 占 1 列，汉字占 2 列。 */
-    int displayWidth(const std::string& text)
-    {
-        int width = 0;
-        std::size_t i = 0;
-
-        while (i < text.size()) {
-            const unsigned char ch = static_cast<unsigned char>(text[i]);
-            if (ch < 0x80) {
-                width += 1;
-                i += 1;
-            }
-            else if ((ch & 0xE0) == 0xC0) {
-                width += 1;
-                i += 2;
-            }
-            else if ((ch & 0xF0) == 0xE0) {
-                width += 2;
-                i += 3;
-            }
-            else {
-                width += 2;
-                i += 4;
-            }
-        }
-        return width;
-    }
-
-    /* 左对齐输出，并用空格补齐到指定显示宽度。 */
-    void printPadded(const std::string& text, int width)
-    {
-        std::cout << text;
-        const int used = displayWidth(text);
-        if (used < width) {
-            std::cout << std::string(static_cast<std::size_t>(width - used), ' ');
-        }
-    }
-
-    /* 右对齐输出，用于序号等数字列。 */
-    void printRightAligned(const std::string& text, int width)
-    {
-        const int used = displayWidth(text);
-        if (used < width) {
-            std::cout << std::string(static_cast<std::size_t>(width - used), ' ');
-        }
-        std::cout << text;
-    }
-
-    std::string formatDate(int month, int day)
-    {
-        char date[16];
-        std::snprintf(date, sizeof(date), "%02d-%02d", month, day);
-        return std::string(date);
-    }
-
-    void printTableHeader()
-    {
-        std::cout << "\n  ";
-        printRightAligned("序号", 4);
-        std::cout << "  ";
-        printPadded("学号", 12);
-        std::cout << "  ";
-        printPadded("姓名", 10);
-        std::cout << "  ";
-        printPadded("班级", 12);
-        std::cout << "  ";
-        printPadded("日期", 7);
-        std::cout << "  状态\n";
-        std::cout << "  " << std::string(70, '-') << '\n';
-    }
-
-    void printRecordLine(int index)
-    {
-        const Record& record = records[index];
-
-        const std::string date = formatDate(record.month, record.day);
-
-        std::cout << "  ";
-        printRightAligned(std::to_string(index + 1), 4);
-        std::cout << "  ";
-        printPadded(record.id, 12);
-        std::cout << "  ";
-        printPadded(record.name, 10);
-        std::cout << "  ";
-        printPadded(record.cls, 12);
-        std::cout << "  ";
-        printPadded(date, 7);
-        std::cout << "  " << statusName(record.status)
-            << ' ' << statusSymbol(record.status) << '\n';
-    }
-
-    /* 按页显示 [start, stop) 区间内的记录。 */
-    void showPageRange(int start, int stop)
-    {
-        if (start < 0) {
-            start = 0;
-        }
-        if (stop > recordCount) {
-            stop = recordCount;
-        }
-        if (start >= stop) {
-            std::cout << "  没有可显示的记录。\n";
-            return;
-        }
-
-        const int total = stop - start;
-        const int pages = (total + kPageSize - 1) / kPageSize;
-
-        int shown = 0;
-        int page = 1;
-        printTableHeader();
-
-        for (int index = start; index < stop; ++index) {
-            printRecordLine(index);
-            ++shown;
-
-            if (shown % kPageSize == 0 && index + 1 < stop) {
-                std::cout << "  " << std::string(70, '-') << '\n';
-                std::cout << "  第 " << page << '/' << pages
-                    << " 页已显示，回车继续，输入 q 退出：" << std::flush;
-
-                std::string input;
-                if (!readLine(input)) {
-                    return;
-                }
-                trim(input);
-                if (input == "q" || input == "Q") {
-                    std::cout << "  已提前结束显示。\n";
-                    return;
-                }
-
-                ++page;
-                printTableHeader();
-            }
-        }
-
-        std::cout << "  " << std::string(70, '-') << '\n';
-        std::cout << "  共显示 " << shown << " 条记录（第 " << start + 1
-            << " 条~第 " << start + shown << " 条，每页 "
-            << kPageSize << " 条）。\n";
-    }
-
-    /* 显示全部记录（自动分页）。 */
-    void showAll()
-    {
-        showPageRange(0, recordCount);
-
-        if (recordCount == 0) {
-            std::cout << "  提示：当前没有记录，可先使用【1 新增记录】或"
-                "【8 读取文件】。\n";
-        }
-    }
-
-    /* ==========================================================================
-     *  三、查找结果输出
-     * ========================================================================== */
-
-    void printSearchResults(const std::vector<int>& matches)
-    {
-        if (matches.empty()) {
-            return;
-        }
-
-        std::cout << "\n  找到以下记录：\n";
-        for (int index : matches) {
-            printRecordLine(index);
-        }
-        std::cout << "  共 " << matches.size() << " 条。\n";
-    }
-
-    /* ==========================================================================
-     *  四、各功能子菜单
-     * ========================================================================== */
-
-     /* 1 新增记录 */
-    void menuAdd()
-    {
-        std::cout << "\n=== 1 新增考勤记录 ===\n";
-
-        std::string id;
-        std::string name;
-        std::string cls;
-        if (!readText("  学号（6~12 位数字）：", id)) {
-            return;
-        }
-        if (!readText("  姓名（不超过 20 字节）：", name)) {
-            return;
-        }
-        if (!readText("  班级（不超过 30 字节）：", cls)) {
-            return;
-        }
-
-        int month = 0;
-        int day = 0;
-        int status = 0;
-        if (!readChoice("  月份（1~12）：", 1, 12, month)) {
-            return;
-        }
-        if (!readChoice("  日期（1~31，按月份自动校验）：", 1, 31, day)) {
-            return;
-        }
-
-        std::cout << "  状态码：0出勤 1旷课 2事假 3病假 4迟到 5早退\n";
-        if (!readChoice("  状态码（0~5）：", 0, STATUS_COUNT - 1, status)) {
-            return;
-        }
-
-        Record record;
-        record.id = id;
-        record.name = name;
-        record.cls = cls;
-        record.month = month;
-        record.day = day;
-        record.status = status;
-
-        std::string error;
-        const int rc = addRecord(record, error);
-        if (rc == OK) {
-            std::cout << "  新增成功！当前共 " << recordCount << " 条记录。\n";
-        }
-        else {
-            std::cout << "  新增失败：" << (error.empty() ? "未知错误" : error)
-                << '\n';
-        }
-    }
-
-    /* 2 查找记录（按学号 / 姓名 / 日期） */
-    void menuFind()
-    {
-        std::cout << "\n=== 2 查找考勤记录 ===\n";
-        std::cout << "  1) 按学号查找\n"
-            "  2) 按姓名查找\n"
-            "  3) 按日期查找\n"
-            "  0) 返回上级菜单\n";
-
-        int choice = 0;
-        if (!readChoice("  请选择（0~3）：", 0, 3, choice)) {
-            return;
-        }
-        if (choice == 0) {
-            return;
-        }
-
-        if (choice == 1) {
-            std::string id;
-            if (!readText("  请输入学号：", id)) {
-                return;
-            }
-
-            std::vector<int> matches;
-            for (int i = 0; i < recordCount; ++i) {
-                if (records[i].id == id) {
-                    matches.push_back(i);
-                }
-            }
-
-            if (matches.empty()) {
-                std::cout << "  未找到学号为 " << id << " 的记录。\n";
-            }
-            else {
-                printSearchResults(matches);
-            }
-        }
-        else if (choice == 2) {
-            std::string name;
-            if (!readText("  请输入姓名：", name)) {
-                return;
-            }
-
-            std::vector<int> matches;
-            for (int i = 0; i < recordCount; ++i) {
-                if (records[i].name == name) {
-                    matches.push_back(i);
-                }
-            }
-
-            if (matches.empty()) {
-                std::cout << "  未找到姓名为 " << name << " 的记录。\n";
-            }
-            else {
-                printSearchResults(matches);
-            }
-        }
-        else {
-            int month = 0;
-            int day = 0;
-            if (!readChoice("  月份（1~12）：", 1, 12, month)) {
-                return;
-            }
-            if (!readChoice("  日期（1~31）：", 1, 31, day)) {
-                return;
-            }
-
-            std::vector<int> matches;
-            for (int i = 0; i < recordCount; ++i) {
-                if (records[i].month == month && records[i].day == day) {
-                    matches.push_back(i);
-                }
-            }
-
-            if (matches.empty()) {
-                std::cout << "  未找到 " << formatDate(month, day)
-                    << " 的记录。\n";
-            }
-            else {
-                printSearchResults(matches);
-            }
-        }
-    }
-
-    /* 3 修改记录：先按学号+日期定位，再逐项输入新值。 */
-    void menuUpdate()
-    {
-        std::cout << "\n=== 3 修改考勤记录 ===\n";
-        if (recordCount == 0) {
-            std::cout << "  当前没有记录。\n";
-            return;
-        }
-
-        std::string id;
-        if (!readText("  请输入要修改记录的学号：", id)) {
-            return;
-        }
-
-        int month = 0;
-        int day = 0;
-        if (!readChoice("  原记录月份（1~12）：", 1, 12, month)) {
-            return;
-        }
-        if (!readChoice("  原记录日期（1~31）：", 1, 31, day)) {
-            return;
-        }
-
-        const int index = findRecord(id, month, day);
-        if (index < 0) {
-            std::cout << "  未找到该学号在该日期的记录。\n";
-            return;
-        }
-
-        Record record = records[index];
-        std::cout << "  当前内容：" << record.id << ' ' << record.name << ' '
-            << record.cls << ' ' << formatDate(record.month, record.day)
-            << " 状态码 " << record.status << '\n';
-        std::cout << "  直接回车表示保留原值。\n";
-
-        std::string input;
-
-        if (!readText("  学号（回车保留）：", input)) {
-            return;
-        }
-        if (!input.empty()) {
-            record.id = input;
-        }
-
-        if (!readText("  姓名（回车保留）：", input)) {
-            return;
-        }
-        if (!input.empty()) {
-            record.name = input;
-        }
-
-        if (!readText("  班级（回车保留）：", input)) {
-            return;
-        }
-        if (!input.empty()) {
-            record.cls = input;
-        }
-
-        if (!readText("  月份（回车保留）：", input)) {
-            return;
-        }
-        if (!input.empty()) {
-            int value = 0;
-            if (parseBoundedInt(input, 1, 12, value)) {
-                record.month = value;
-            }
-            else {
-                std::cout << "  [!] 月份无效，保留原值 " << record.month << "。\n";
-            }
-        }
-
-        if (!readText("  日期（回车保留）：", input)) {
-            return;
-        }
-        if (!input.empty()) {
-            int value = 0;
-            if (parseBoundedInt(input, 1, 31, value)) {
-                record.day = value;
-            }
-            else {
-                std::cout << "  [!] 日期无效，保留原值 " << record.day << "。\n";
-            }
-        }
-
-        std::cout << "  状态码：0出勤 1旷课 2事假 3病假 4迟到 5早退\n";
-        if (!readText("  状态码（回车保留）：", input)) {
-            return;
-        }
-        if (!input.empty()) {
-            int value = 0;
-            if (parseBoundedInt(input, 0, STATUS_COUNT - 1, value)) {
-                record.status = value;
-            }
-            else {
-                std::cout << "  [!] 状态码无效，保留原值 " << record.status << "。\n";
-            }
-        }
-
-        std::string error;
-        const int rc = updateRecord(index, record, error);
-        if (rc == OK) {
-            std::cout << "  修改成功。\n";
-        }
-        else {
-            std::cout << "  修改失败：" << (error.empty() ? "未知错误" : error)
-                << '\n';
-        }
-    }
-
-    /* 4 删除记录 */
-    void menuDelete()
-    {
-        std::cout << "\n=== 4 删除考勤记录 ===\n";
-        if (recordCount == 0) {
-            std::cout << "  当前没有记录。\n";
-            return;
-        }
-
-        std::string id;
-        if (!readText("  请输入要删除记录的学号：", id)) {
-            return;
-        }
-
-        int month = 0;
-        int day = 0;
-        if (!readChoice("  记录月份（1~12）：", 1, 12, month)) {
-            return;
-        }
-        if (!readChoice("  记录日期（1~31）：", 1, 31, day)) {
-            return;
-        }
-
-        const int index = findRecord(id, month, day);
-        if (index < 0) {
-            std::cout << "  未找到该记录。\n";
-            return;
-        }
-
-        if (!askYesNo("  确认删除该记录？(y/n)：")) {
-            std::cout << "  已取消。\n";
-            return;
-        }
-
-        const int rc = deleteRecord(index);
-        if (rc == OK) {
-            std::cout << "  删除成功，当前共 " << recordCount << " 条记录。\n";
-        }
-        else {
-            std::cout << "  删除失败。\n";
-        }
-    }
-
-    /* 5 显示列表（按排序方式） */
-    void menuList()
-    {
-        std::cout << "\n=== 5 显示考勤记录列表 ===\n";
-        std::cout << "  排序方式：\n"
-            "  1) 按学号（学号→日期→姓名）\n"
-            "  2) 按姓名（姓名→学号→日期）\n"
-            "  3) 按日期（日期→学号）\n"
-            "  0) 不排序，按录入顺序\n";
-
-        int choice = 0;
-        if (!readChoice("  请选择（0~3）：", 0, 3, choice)) {
-            return;
-        }
-
-        switch (choice) {
-        case 1:
-            sortRecords(records, recordCount, SORT_BY_ID);
-            break;
-        case 2:
-            sortRecords(records, recordCount, SORT_BY_NAME);
-            break;
-        case 3:
-            sortRecords(records, recordCount, SORT_BY_DATE);
-            break;
-        default:
-            break;
-        }
-
-        showAll();
-    }
-
-    /* 6 统计报表 */
-    void menuStat()
-    {
-        std::cout << "\n=== 6 数据统计（报表） ===\n";
-        std::cout << "  1) 考勤明细表\n"
-            "  2) 考勤日报表\n"
-            "  3) 考勤汇总表\n"
-            "  4) 考勤异常表\n"
-            "  5) 请假汇总表\n"
-            "  6) 全部显示\n"
-            "  0) 返回上级菜单\n";
-
-        int choice = 0;
-        if (!readChoice("  请选择（0~6）：", 0, 6, choice)) {
-            return;
-        }
-
-        switch (choice) {
-        case 1:
-            reportDetail(records, recordCount);
-            break;
-        case 2:
-            reportDaily(records, recordCount);
-            break;
-        case 3:
-            reportSummary(records, recordCount);
-            break;
-        case 4:
-            reportAbnormal(records, recordCount);
-            break;
-        case 5:
-            reportLeave(records, recordCount);
-            break;
-        case 6:
-            reportDetail(records, recordCount);
-            reportDaily(records, recordCount);
-            reportSummary(records, recordCount);
-            reportAbnormal(records, recordCount);
-            reportLeave(records, recordCount);
-            break;
-        default:
-            break;
-        }
-    }
-
-    /* 7 保存数据 */
-    void menuSave(const std::string& path)
-    {
-        std::cout << "\n=== 7 保存数据到文件 ===\n";
-        const int rc = saveData(path.c_str());
-        if (rc == OK) {
-            std::cout << "  已保存 " << recordCount << " 条记录到 " << path << '\n';
-        }
-        else {
-            std::cout << "  保存失败：无法写入 " << path << '\n';
-        }
-    }
-
-    /* 8 从文件读入 */
-    void menuLoad(const std::string& path)
-    {
-        std::cout << "\n=== 8 从文件读入数据 ===\n";
-        const int rc = loadData(path.c_str());
-        if (rc == OK) {
-            std::cout << "  读取成功，当前共 " << recordCount << " 条记录。\n";
-        }
-        else if (rc == ERR_FILE) {
-            std::cout << "  读取失败：找不到文件 " << path << '\n';
-        }
-        else {
-            std::cout << "  读取失败（错误码 " << rc << "）。\n";
-        }
-    }
-
-    /* 9 退出 */
-    void saveBeforeExit(const std::string& path)
-    {
-        std::cout << "\n=== 9 退出系统 ===\n";
-        if (recordCount > 0) {
-            if (askYesNo("  退出前要先保存到数据文件吗？(y/n)：")) {
-                const int rc = saveData(path.c_str());
-                if (rc == OK) {
-                    std::cout << "  已保存 " << recordCount << " 条记录到 "
-                        << path << '\n';
-                }
-                else {
-                    std::cout << "  保存失败：无法写入 " << path << '\n';
-                }
-            }
-        }
-        std::cout << "  感谢使用大学生考勤系统，再见！\n";
-    }
-
-    /* ==========================================================================
-     *  五、主菜单
-     * ========================================================================== */
-
-    void printMenu()
-    {
-        std::cout << "\n"
-            "  ==================================================================\n"
-            "                    大 学 生 考 勤 系 统\n"
-            "  ==================================================================\n"
-            "     1. 新增考勤记录          2. 查找考勤记录\n"
-            "     3. 修改考勤记录          4. 删除考勤记录\n"
-            "     5. 显示记录列表          6. 统计报表\n"
-            "     7. 保存数据到文件        8. 从文件读入数据\n"
-            "     9. 退出系统\n"
-            "  ==================================================================\n";
-        std::cout << "  当前记录数：" << recordCount << " 条\n";
-    }
-
-}  // namespace
-
-int main(int argc, char** argv)
+bool isSpaceChar(char ch)           // 代替 isspace
 {
-    setupConsole();
+    return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
+}
 
-    const std::string path =
-        (argc >= 2) ? std::string(argv[1]) : std::string(kDefaultDataFile);
+void trim(string& text)             // 去掉首尾空白
+{
+    int begin = 0;
+    int end = (int)text.size();
 
-    /* 启动时尝试自动读入数据文件；文件不存在属于正常情况。 */
+    while (begin < end && isSpaceChar(text[begin])) {
+        ++begin;
+    }
+    while (end > begin && isSpaceChar(text[end - 1])) {
+        --end;
+    }
+    text = text.substr(begin, end - begin);
+}
+
+/* 把月、日格式化成 "05-06"，不用 sprintf，纯字符运算 */
+string formatDate(int month, int day)
+{
+    char buffer[6];
+    buffer[0] = (char)('0' + month / 10);
+    buffer[1] = (char)('0' + month % 10);
+    buffer[2] = '-';
+    buffer[3] = (char)('0' + day / 10);
+    buffer[4] = (char)('0' + day % 10);
+    buffer[5] = '\0';
+    return string(buffer);
+}
+
+/* 运算符重载：用 cout << record 直接输出一条记录（6.2 运算符重载） */
+ostream& operator<<(ostream& os, const Record& r)
+{
+    os << r.id << ' ' << r.name << ' ' << r.cls << ' '
+        << formatDate(r.month, r.day) << " 状态码 " << r.status;
+    return os;
+}
+
+/* ============================================================================
+ *  一、界面类
+ *
+ *  界面层只做三件事：转发调用、读输入并校验格式、按显示宽度分页打印。
+ * ========================================================================== */
+class AttendanceUI
+{
+public:
+    AttendanceUI(const string& dataFile);   // 构造函数
+    void run();                             // 主循环
+
+private:
+    /* ---------- 输入 ---------- */
+    bool readLine(string& line) const;
+    bool readText(const string& prompt, string& value) const;
+    bool readInt(const string& prompt, int low, int high, int& value) const;
+    bool readOptionalInt(const string& prompt, int low, int high,
+        int& value, const string& fieldName) const;
+    bool askYesNo(const string& prompt) const;
+    bool parseRange(const string& text, int low, int high, int& value) const;
+
+    /* ---------- 输出 ---------- */
+    int    textWidth(const string& text) const;      // 显示宽度：汉字算 2 列
+    string clip(const string& text, int maxWidth) const;
+    void   printPadded(const string& text, int w) const;
+    void   printRight(const string& text, int w) const;
+    void   printIntRight(int value, int w) const;
+    void   printHeader() const;
+    void   printLine(int index) const;
+    void   showPage(const int* idx, int n) const;    // 分页显示一批下标
+
+    /* ---------- 菜单 ---------- */
+    void printMenu() const;
+    void menuAdd();
+    void menuFind();
+    void menuUpdate();
+    void menuDelete();
+    void menuList();
+    void menuStat();
+    void menuSave() const;
+    void saveToFile() const;                         // 保存逻辑只写一份
+    void menuLoad();
+    void menuExit() const;
+
+    static const int PAGE_SIZE = 12;                 // 静态数据成员（4.2.1）
+    string path;                                     // 数据文件路径
+};
+
+const int AttendanceUI::PAGE_SIZE;                   // 类外定义
+
+/* ============================================================================
+ *  二、构造与主循环
+ * ========================================================================== */
+
+AttendanceUI::AttendanceUI(const string& dataFile) : path(dataFile)   // 初始化列表
+{
+}
+
+void AttendanceUI::run()
+{
     if (loadData(path.c_str()) != OK) {
-        std::cout << "  提示：未找到数据文件 " << path
+        cout << "  提示：未找到数据文件 " << path
             << "，可作为新系统开始使用。\n";
     }
     else {
-        std::cout << "  已从 " << path << " 读入 " << recordCount
-            << " 条记录。\n";
+        cout << "  已从 " << path << " 读入 " << recordCount << " 条记录。\n";
     }
 
     for (;;) {
         printMenu();
 
         int choice = 0;
-        if (!readChoice("  请选择功能（1~9）：", 1, 9, choice)) {
-            std::cout << "\n  输入已结束，程序退出。\n";
-            return 0;
+        /* 只有输入流结束才返回 false；范围外的输入会被反复重问 */
+        if (!readInt("  请选择功能（1~9）：", 1, 9, choice)) {
+            cout << "\n  输入已结束，程序退出。\n";
+            return;
         }
 
         switch (choice) {
-        case 1:
-            menuAdd();
-            break;
-        case 2:
-            menuFind();
-            break;
-        case 3:
-            menuUpdate();
-            break;
-        case 4:
-            menuDelete();
-            break;
-        case 5:
-            menuList();
-            break;
-        case 6:
-            menuStat();
-            break;
-        case 7:
-            menuSave(path);
-            break;
-        case 8:
-            menuLoad(path);
-            break;
-        case 9:
-            saveBeforeExit(path);
-            return 0;
-        default:
-            std::cout << "  [!] 无效选项，请输入 1~9。\n";
-            break;
+        case 1: menuAdd();    break;
+        case 2: menuFind();   break;
+        case 3: menuUpdate(); break;
+        case 4: menuDelete(); break;
+        case 5: menuList();   break;
+        case 6: menuStat();   break;
+        case 7: menuSave();   break;
+        case 8: menuLoad();   break;
+        case 9: menuExit();   return;
+        }
+        /* readInt 已保证 1~9，不需要 default */
+    }
+}
+
+/* ============================================================================
+ *  三、输入：整行读取 + 范围解析
+ * ========================================================================== */
+
+ /* 读一整行。成功返回 true；输入流结束返回 false。 */
+bool AttendanceUI::readLine(string& line) const
+{
+    char buffer[LINE_SIZE];
+
+    if (!cin.getline(buffer, LINE_SIZE)) {
+        if (cin.eof()) {                 // 流结束
+            return false;
+        }
+        cin.clear();                     // 本行超长：清状态，丢掉剩余字符
+        while (cin.get() != '\n' && !cin.eof()) {
         }
     }
+
+    line = buffer;
+    trim(line);
+    return true;
+}
+
+/* 严格解析：整串都是数字，且在 [low, high] 内。 */
+bool AttendanceUI::parseRange(const string& text, int low, int high, int& value) const
+{
+    if (text.empty()) {
+        return false;
+    }
+
+    int result = 0;
+    for (int i = 0; i < (int)text.size(); ++i) {
+        char ch = text[i];
+        if (ch < '0' || ch > '9') {
+            return false;
+        }
+        result = result * 10 + (ch - '0');
+        if (result > high) {             // 提前剪枝，顺带防溢出
+            return false;
+        }
+    }
+
+    if (result < low) {
+        return false;
+    }
+    value = result;
+    return true;
+}
+
+/* 反复询问，直到得到 [low, high] 内的整数；流结束返回 false。 */
+bool AttendanceUI::readInt(const string& prompt, int low, int high, int& value) const
+{
+    for (;;) {
+        cout << prompt;
+
+        string line;
+        if (!readLine(line)) {
+            return false;
+        }
+        if (line.empty()) {              // 直接回车：重问一次
+            continue;
+        }
+        if (parseRange(line, low, high, value)) {
+            return true;
+        }
+        cout << "  [!] 输入无效：请输入 " << low << " ~ " << high
+            << " 之间的整数。\n";
+    }
+}
+
+/* 读一行文本（可能是空串，由调用方决定空串含义）。 */
+bool AttendanceUI::readText(const string& prompt, string& value) const
+{
+    cout << prompt;
+    return readLine(value);
+}
+
+/* 回车保留原值；输入非法则提示并保留原值。 */
+bool AttendanceUI::readOptionalInt(const string& prompt, int low, int high,
+    int& value, const string& fieldName) const
+{
+    cout << prompt;
+
+    string line;
+    if (!readLine(line)) {
+        return false;
+    }
+    if (line.empty()) {
+        return true;                     // 保留原值
+    }
+
+    int parsed = 0;
+    if (parseRange(line, low, high, parsed)) {
+        value = parsed;
+    }
+    else {
+        cout << "  [!] " << fieldName << "无效，保留原值 " << value << "。\n";
+    }
+    return true;
+}
+
+/* 只接受 y/Y/n/N；流结束按“否”处理。 */
+bool AttendanceUI::askYesNo(const string& prompt) const
+{
+    for (;;) {
+        cout << prompt;
+
+        string line;
+        if (!readLine(line)) {
+            return false;
+        }
+        if (line == "y" || line == "Y") {
+            return true;
+        }
+        if (line == "n" || line == "N") {
+            return false;
+        }
+        cout << "  [!] 请输入 y 或 n。\n";
+    }
+}
+
+/* ============================================================================
+ *  四、输出：显示宽度与分页
+ * ========================================================================== */
+
+ /* 汉字、中文标点占 2 列，ASCII 占 1 列。按 UTF-8 首字节判断。 */
+int AttendanceUI::textWidth(const string& text) const
+{
+    int w = 0;
+    const unsigned char* p = (const unsigned char*)text.c_str();
+
+    while (*p != '\0') {
+        if (*p < 0x80) {
+            w += 1;
+            p += 1;
+        }
+        else if ((*p & 0xE0) == 0xC0) {
+            w += 1;
+            p += 2;
+        }
+        else if ((*p & 0xF0) == 0xE0) {
+            w += 2;
+            p += 3;
+        }
+        else {
+            w += 2;
+            p += 4;
+        }
+    }
+    return w;
+}
+
+/* 超宽时按显示宽度截断，末尾补 ".."，避免把整张表顶歪。 */
+string AttendanceUI::clip(const string& text, int maxWidth) const
+{
+    if (textWidth(text) <= maxWidth) {
+        return text;
+    }
+
+    string out;
+    int used = 0;
+    int i = 0;
+    const int n = (int)text.size();
+
+    while (i < n) {
+        unsigned char ch = (unsigned char)text[i];
+        int step = 1;
+        int w = 1;
+
+        if (ch < 0x80) {
+            step = 1;
+            w = 1;
+        }
+        else if ((ch & 0xE0) == 0xC0) {
+            step = 2;
+            w = 1;
+        }
+        else if ((ch & 0xF0) == 0xE0) {
+            step = 3;
+            w = 2;
+        }
+        else {
+            step = 4;
+            w = 2;
+        }
+
+        if (i + step > n || used + w > maxWidth) {
+            break;
+        }
+        out += text.substr(i, step);
+        used += w;
+        i += step;
+    }
+
+    if (used + 2 <= maxWidth) {
+        out += "..";
+    }
+    return out;
+}
+
+/* 左对齐并补空格到指定显示宽度 */
+void AttendanceUI::printPadded(const string& text, int w) const
+{
+    const string shown = clip(text, w);
+    cout << shown;
+
+    const int used = textWidth(shown);
+    if (used < w) {
+        cout << string(w - used, ' ');
+    }
+}
+
+/* 右对齐（用于表头文字） */
+void AttendanceUI::printRight(const string& text, int w) const
+{
+    const int used = textWidth(text);
+    if (used < w) {
+        cout << string(w - used, ' ');
+    }
+    cout << text;
+}
+
+/* 右对齐一个整数（代替 to_string） */
+void AttendanceUI::printIntRight(int value, int w) const
+{
+    int digits = 1;
+    for (int t = value; t >= 10; t /= 10) {
+        ++digits;
+    }
+    if (digits < w) {
+        cout << string(w - digits, ' ');
+    }
+    cout << value;
+}
+
+void AttendanceUI::printHeader() const
+{
+    cout << "\n  ";
+    printRight("序号", 4);
+    cout << "  ";
+    printPadded("学号", 12);
+    cout << "  ";
+    printPadded("姓名", 12);
+    cout << "  ";
+    printPadded("班级", 18);
+    cout << "  ";
+    printPadded("日期", 7);
+    cout << "  状态\n";
+    cout << "  " << string(74, '-') << '\n';
+}
+
+void AttendanceUI::printLine(int index) const
+{
+    const Record& r = records[index];
+
+    cout << "  ";
+    printIntRight(index + 1, 4);
+    cout << "  ";
+    printPadded(r.id, 12);
+    cout << "  ";
+    printPadded(r.name, 12);
+    cout << "  ";
+    printPadded(r.cls, 18);
+    cout << "  ";
+    printPadded(formatDate(r.month, r.day), 7);
+    cout << "  " << statusName(r.status) << ' ' << statusSymbol(r.status) << '\n';
+}
+
+/* 分页显示 idx[0..n-1] 指向的记录；每 PAGE_SIZE 条暂停一次。 */
+void AttendanceUI::showPage(const int* idx, int n) const
+{
+    if (n <= 0) {
+        cout << "  没有可显示的记录。\n";
+        return;
+    }
+
+    const int pages = (n + PAGE_SIZE - 1) / PAGE_SIZE;
+    int page = 1;
+
+    printHeader();
+
+    for (int i = 0; i < n; ++i) {
+        printLine(idx[i]);
+
+        if ((i + 1) % PAGE_SIZE == 0 && i + 1 < n) {
+            cout << "  " << string(74, '-') << '\n';
+            cout << "  第 " << page << '/' << pages
+                << " 页已显示，回车继续，输入 q 退出：";
+
+            string input;
+            if (!readLine(input)) {
+                return;
+            }
+            if (input == "q" || input == "Q") {
+                cout << "  已提前结束显示。\n";
+                return;
+            }
+            ++page;
+            printHeader();
+        }
+    }
+
+    cout << "  " << string(74, '-') << '\n';
+    cout << "  共显示 " << n << " 条记录（每页 " << PAGE_SIZE << " 条）。\n";
+}
+
+/* ============================================================================
+ *  五、各功能子菜单
+ * ========================================================================== */
+
+void AttendanceUI::menuAdd()
+{
+    cout << "\n=== 1 新增考勤记录 ===\n";
+
+    string id;
+    string name;
+    string cls;
+    if (!readText("  学号（6~12 位数字）：", id)) {
+        return;
+    }
+    if (!readText("  姓名（不超过 20 字节）：", name)) {
+        return;
+    }
+    if (!readText("  班级（不超过 30 字节）：", cls)) {
+        return;
+    }
+
+    int month = 0;
+    int day = 0;
+    int status = 0;
+    if (!readInt("  月份（1~12）：", 1, 12, month)) {
+        return;
+    }
+    if (!readInt("  日期（1~31，月份天数由数据层校验）：", 1, 31, day)) {
+        return;
+    }
+
+    cout << "  状态码：0出勤 1旷课 2事假 3病假 4迟到 5早退\n";
+    if (!readInt("  状态码（0~5）：", 0, STATUS_COUNT - 1, status)) {
+        return;
+    }
+
+    Record record;                       // 对象作参数（3.6.4），下面交给甲
+    record.id = id;
+    record.name = name;
+    record.cls = cls;
+    record.month = month;
+    record.day = day;
+    record.status = status;
+
+    string error;
+    if (addRecord(record, error) == OK) {
+        cout << "  新增成功！当前共 " << recordCount << " 条记录。\n";
+    }
+    else {
+        cout << "  新增失败：" << (error.empty() ? "未知错误" : error) << '\n';
+    }
+}
+
+/* 查找一律交给甲的 findById / findByName / findByDate，
+ * 界面层只负责收集下标、分页显示。 */
+void AttendanceUI::menuFind()
+{
+    cout << "\n=== 2 查找考勤记录 ===\n";
+    cout << "  1) 按学号查找\n"
+        "  2) 按姓名查找\n"
+        "  3) 按日期查找\n"
+        "  0) 返回上级菜单\n";
+
+    int choice = 0;
+    if (!readInt("  请选择（0~3）：", 0, 3, choice)) {
+        return;
+    }
+    if (choice == 0) {
+        return;
+    }
+
+    int idx[MAX_RECORDS];
+    int n = 0;
+
+    if (choice == 1) {
+        string id;
+        if (!readText("  请输入学号：", id)) {
+            return;
+        }
+        n = findById(id, idx, MAX_RECORDS);
+        if (n == 0) {
+            cout << "  未找到学号为 " << id << " 的记录。\n";
+            return;
+        }
+    }
+    else if (choice == 2) {
+        string name;
+        if (!readText("  请输入姓名：", name)) {
+            return;
+        }
+        n = findByName(name, idx, MAX_RECORDS);
+        if (n == 0) {
+            cout << "  未找到姓名为 " << name << " 的记录。\n";
+            return;
+        }
+    }
+    else {
+        int month = 0;
+        int day = 0;
+        if (!readInt("  月份（1~12）：", 1, 12, month)) {
+            return;
+        }
+        if (!readInt("  日期（1~31）：", 1, 31, day)) {
+            return;
+        }
+        n = findByDate(month, day, idx, MAX_RECORDS);
+        if (n == 0) {
+            cout << "  未找到 " << formatDate(month, day) << " 的记录。\n";
+            return;
+        }
+    }
+
+    cout << "\n  找到以下记录：\n";
+    showPage(idx, n);
+}
+
+void AttendanceUI::menuUpdate()
+{
+    cout << "\n=== 3 修改考勤记录 ===\n";
+    if (recordCount == 0) {
+        cout << "  当前没有记录。\n";
+        return;
+    }
+
+    string id;
+    if (!readText("  请输入要修改记录的学号：", id)) {
+        return;
+    }
+
+    int month = 0;
+    int day = 0;
+    if (!readInt("  原记录月份（1~12）：", 1, 12, month)) {
+        return;
+    }
+    if (!readInt("  原记录日期（1~31）：", 1, 31, day)) {
+        return;
+    }
+
+    const int index = findRecord(id, month, day);
+    if (index < 0) {
+        cout << "  未找到该学号在该日期的记录。\n";
+        return;
+    }
+
+    Record record = records[index];       // 隐式调用复制构造函数（3.4.5）
+    cout << "  当前内容：" << record << '\n';   // 使用重载的 <<
+    cout << "  直接回车表示保留原值。\n";
+
+    string input;
+    if (!readText("  学号（回车保留）：", input)) {
+        return;
+    }
+    if (!input.empty()) {
+        record.id = input;
+    }
+
+    if (!readText("  姓名（回车保留）：", input)) {
+        return;
+    }
+    if (!input.empty()) {
+        record.name = input;
+    }
+
+    if (!readText("  班级（回车保留）：", input)) {
+        return;
+    }
+    if (!input.empty()) {
+        record.cls = input;
+    }
+
+    if (!readOptionalInt("  月份（回车保留）：", 1, 12, record.month, "月份")) {
+        return;
+    }
+    if (!readOptionalInt("  日期（回车保留）：", 1, 31, record.day, "日期")) {
+        return;
+    }
+
+    cout << "  状态码：0出勤 1旷课 2事假 3病假 4迟到 5早退\n";
+    if (!readOptionalInt("  状态码（回车保留）：", 0, STATUS_COUNT - 1,
+        record.status, "状态码")) {
+        return;
+    }
+
+    string error;
+    if (updateRecord(index, record, error) == OK) {
+        cout << "  修改成功。\n";
+    }
+    else {
+        cout << "  修改失败：" << (error.empty() ? "未知错误" : error) << '\n';
+    }
+}
+
+void AttendanceUI::menuDelete()
+{
+    cout << "\n=== 4 删除考勤记录 ===\n";
+    if (recordCount == 0) {
+        cout << "  当前没有记录。\n";
+        return;
+    }
+
+    string id;
+    if (!readText("  请输入要删除记录的学号：", id)) {
+        return;
+    }
+
+    int month = 0;
+    int day = 0;
+    if (!readInt("  记录月份（1~12）：", 1, 12, month)) {
+        return;
+    }
+    if (!readInt("  记录日期（1~31）：", 1, 31, day)) {
+        return;
+    }
+
+    const int index = findRecord(id, month, day);
+    if (index < 0) {
+        cout << "  未找到该记录。\n";
+        return;
+    }
+
+    if (!askYesNo("  确认删除该记录？(y/n)：")) {
+        cout << "  已取消。\n";
+        return;
+    }
+
+    if (deleteRecord(index) == OK) {
+        cout << "  删除成功，当前共 " << recordCount << " 条记录。\n";
+    }
+    else {
+        cout << "  删除失败。\n";
+    }
+}
+
+void AttendanceUI::menuList()
+{
+    cout << "\n=== 5 显示考勤记录列表 ===\n";
+    cout << "  排序方式：\n"
+        "  1) 按学号（学号→日期→姓名）\n"
+        "  2) 按姓名（姓名→学号→日期）\n"
+        "  3) 按日期（日期→学号）\n"
+        "  0) 不排序，按录入顺序\n";
+
+    int choice = 0;
+    if (!readInt("  请选择（0~3）：", 0, 3, choice)) {
+        return;
+    }
+
+    switch (choice) {                     // 排序交给乙
+    case 1:
+        sortRecords(records, recordCount, SORT_BY_ID);
+        break;
+    case 2:
+        sortRecords(records, recordCount, SORT_BY_NAME);
+        break;
+    case 3:
+        sortRecords(records, recordCount, SORT_BY_DATE);
+        break;
+    case 0:
+        break;
+    }
+
+    if (recordCount == 0) {
+        cout << "  提示：当前没有记录，可先使用【1 新增记录】或"
+            "【8 读取文件】。\n";
+        return;
+    }
+
+    int idx[MAX_RECORDS];
+    for (int i = 0; i < recordCount; ++i) {
+        idx[i] = i;
+    }
+    showPage(idx, recordCount);
+}
+
+void AttendanceUI::menuStat()
+{
+    cout << "\n=== 6 数据统计（报表） ===\n";
+    cout << "  1) 考勤明细表\n"
+        "  2) 考勤日报表\n"
+        "  3) 考勤汇总表\n"
+        "  4) 考勤异常表\n"
+        "  5) 请假汇总表\n"
+        "  6) 全部显示\n"
+        "  0) 返回上级菜单\n";
+
+    int choice = 0;
+    if (!readInt("  请选择（0~6）：", 0, 6, choice)) {
+        return;
+    }
+
+    switch (choice) {                     // 报表全部由乙输出
+    case 1:
+        reportDetail(records, recordCount);
+        break;
+    case 2:
+        reportDaily(records, recordCount);
+        break;
+    case 3:
+        reportSummary(records, recordCount);
+        break;
+    case 4:
+        reportAbnormal(records, recordCount);
+        break;
+    case 5:
+        reportLeave(records, recordCount);
+        break;
+    case 6:
+        reportDetail(records, recordCount);
+        reportDaily(records, recordCount);
+        reportSummary(records, recordCount);
+        reportAbnormal(records, recordCount);
+        reportLeave(records, recordCount);
+        break;
+    case 0:
+        break;
+    }
+}
+
+void AttendanceUI::saveToFile() const
+{
+    if (saveData(path.c_str()) == OK) {
+        cout << "  已保存 " << recordCount << " 条记录到 " << path << '\n';
+    }
+    else {
+        cout << "  保存失败：无法写入 " << path << '\n';
+    }
+}
+
+void AttendanceUI::menuSave() const
+{
+    cout << "\n=== 7 保存数据到文件 ===\n";
+    saveToFile();
+}
+
+void AttendanceUI::menuLoad()
+{
+    cout << "\n=== 8 从文件读入数据 ===\n";
+
+    const int rc = loadData(path.c_str());
+    if (rc == OK) {
+        cout << "  读取成功，当前共 " << recordCount << " 条记录。\n";
+    }
+    else if (rc == ERR_FILE) {
+        cout << "  读取失败：找不到文件 " << path << '\n';
+    }
+    else {
+        cout << "  读取失败（错误码 " << rc << "）。\n";
+    }
+}
+
+void AttendanceUI::menuExit() const
+{
+    cout << "\n=== 9 退出系统 ===\n";
+    if (recordCount > 0) {
+        if (askYesNo("  退出前要先保存到数据文件吗？(y/n)：")) {
+            saveToFile();
+        }
+    }
+    cout << "  感谢使用大学生考勤系统，再见！\n";
+}
+
+/* ============================================================================
+ *  六、主菜单
+ * ========================================================================== */
+
+void AttendanceUI::printMenu() const
+{
+    cout << "\n"
+        "  ==================================================================\n"
+        "                    大 学 生 考 勤 系 统\n"
+        "  ==================================================================\n"
+        "     1. 新增考勤记录          2. 查找考勤记录\n"
+        "     3. 修改考勤记录          4. 删除考勤记录\n"
+        "     5. 显示记录列表          6. 统计报表\n"
+        "     7. 保存数据到文件        8. 从文件读入数据\n"
+        "     9. 退出系统\n"
+        "  ==================================================================\n";
+    cout << "  当前记录数：" << recordCount << " 条\n";
+}
+
+/* ============================================================================
+ *  七、入口
+ * ========================================================================== */
+
+int main(int argc, char** argv)
+{
+    string path = "attendance_data.txt";
+    if (argc >= 2) {
+        path = argv[1];
+    }
+
+    AttendanceUI ui(path);                // 构造界面对象
+    ui.run();                             // 进入主循环
+    return 0;
 }
