@@ -15,6 +15,9 @@
  *
  *  刻意不使用：vector、to_string、范围 for、auto、constexpr、lambda、
  *  std::sort、strtol、sprintf —— 这些均不在本书范围内。
+ *
+ *  中文显示：程序按 UTF-8 输出，开头用两个 Windows API 把控制台代码页
+ *  切到 UTF-8（不是 C++ 语言知识，属于运行环境适配），编译时需加 /utf-8。
  * ========================================================================== */
 
 #include "record.h"
@@ -22,6 +25,7 @@
 
 #include <iostream>
 #include <string>
+#include <windows.h>        // 只为 SetConsoleOutputCP / SetConsoleCP
 
 using namespace std;
 
@@ -38,8 +42,8 @@ bool isSpaceChar(char ch)           // 代替 isspace
 
 void trim(string& text)             // 去掉首尾空白
 {
-    int begin = 0;
-    int end = (int)text.size();
+    size_t begin = 0;
+    size_t end = text.size();
 
     while (begin < end && isSpaceChar(text[begin])) {
         ++begin;
@@ -171,7 +175,7 @@ void AttendanceUI::run()
  /* 读一整行。成功返回 true；输入流结束返回 false。 */
 bool AttendanceUI::readLine(string& line) const
 {
-    char buffer[LINE_SIZE];
+    char buffer[LINE_SIZE] = { 0 };
 
     if (!cin.getline(buffer, LINE_SIZE)) {
         if (cin.eof()) {                 // 流结束
@@ -195,7 +199,7 @@ bool AttendanceUI::parseRange(const string& text, int low, int high, int& value)
     }
 
     int result = 0;
-    for (int i = 0; i < (int)text.size(); ++i) {
+    for (size_t i = 0; i < text.size(); ++i) {
         char ch = text[i];
         if (ch < '0' || ch > '9') {
             return false;
@@ -325,12 +329,12 @@ string AttendanceUI::clip(const string& text, int maxWidth) const
 
     string out;
     int used = 0;
-    int i = 0;
-    const int n = (int)text.size();
+    size_t i = 0;
+    const size_t n = text.size();
 
     while (i < n) {
         unsigned char ch = (unsigned char)text[i];
-        int step = 1;
+        size_t step = 1;
         int w = 1;
 
         if (ch < 0x80) {
@@ -372,7 +376,7 @@ void AttendanceUI::printPadded(const string& text, int w) const
 
     const int used = textWidth(shown);
     if (used < w) {
-        cout << string(w - used, ' ');
+        cout << string((size_t)(w - used), ' ');
     }
 }
 
@@ -381,7 +385,7 @@ void AttendanceUI::printRight(const string& text, int w) const
 {
     const int used = textWidth(text);
     if (used < w) {
-        cout << string(w - used, ' ');
+        cout << string((size_t)(w - used), ' ');
     }
     cout << text;
 }
@@ -394,7 +398,7 @@ void AttendanceUI::printIntRight(int value, int w) const
         ++digits;
     }
     if (digits < w) {
-        cout << string(w - digits, ' ');
+        cout << string((size_t)(w - digits), ' ');
     }
     cout << value;
 }
@@ -856,6 +860,11 @@ void AttendanceUI::printMenu() const
 
 int main(int argc, char** argv)
 {
+    /* 把控制台输入、输出代码页都切到 UTF-8，
+     * 否则程序输出的 UTF-8 中文会被 GBK 控制台显示成乱码。 */
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
     string path = "attendance_data.txt";
     if (argc >= 2) {
         path = argv[1];
