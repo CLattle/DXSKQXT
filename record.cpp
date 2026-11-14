@@ -216,7 +216,7 @@ int findByName(const string &name, int idx[], int max)
 }
 
 /* 按日期查找（某一天全班的考勤情况）。 */
-int findByDate(int month, int day, int idx[], int max)
+int findByDate(int month, int day, int idx[], int max)      //idx[]为输出数组，max为最大容量
 {
     int n = 0;
 
@@ -257,11 +257,11 @@ int loadData(const char *path)
             continue;
         }
 
-        istringstream iss(line);
+        istringstream iss(line);    //将字符串包装为流
         Record r;
         string sm, sd, ss;
 
-        getline(iss, r.id, '|');
+        getline(iss, r.id, '|');      //getline(流,变量,分隔符)
         getline(iss, r.name, '|');
         getline(iss, r.cls, '|');
         getline(iss, sm, '|');
@@ -271,8 +271,8 @@ int loadData(const char *path)
             continue;                 // 字段不够 6 个
         }
 
-        r.month = atoi(sm.c_str());
-        r.day = atoi(sd.c_str());
+        r.month = atoi(sm.c_str());     //atoi读取数字，读到非数字即停
+        r.day = atoi(sd.c_str());       //由于atoi为C函数，c_str()将C++ 字符串 → C 字符串
         r.status = atoi(ss.c_str());
 
         string err;
